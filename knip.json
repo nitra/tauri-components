@@ -10,8 +10,8 @@
     "commitlint.config.{js,cjs,mjs}"
   ],
   "project": ["**/*.{js,mjs,cjs,jsx,ts,tsx,mts,cts}"],
-  "ignore": ["**/__fixtures__/**"],
-  "ignoreDependencies": ["@nitra/cspell-dict", "/@cspell\\/dict-.+/", "graphql"],
+  "ignore": ["**/__fixtures__/**", "**/stryker*.mjs", ".pi/**"],
+  "ignoreDependencies": ["@nitra/cspell-dict", "/@cspell\\/dict-.+/", "graphql", "marked", "vue", "quasar", "@tauri-apps/api", "@tauri-apps/plugin-http"],
   "ignoreBinaries": [
     "actionlint",
     "cspell",
@@ -22,6 +22,7 @@
     "oxfmt",
     "oxlint",
     "shellcheck",
+    "trufflehog",
     "uvx",
     "v8r",
     "zizmor"

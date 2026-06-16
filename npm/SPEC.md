@@ -247,4 +247,5 @@ namespaced `plugin:agent|…`. Деталі — `tauri-plugin-agent/README.md`.
   репо), а не копія команд. Див. §6.
 - **`actorTiers`** — ✅ публічний конфіг із дефолтом `{ human: 2, agent: 1 }`,
   перевизначення дозволене.
+
 ```
