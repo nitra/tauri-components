@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.2.0] - 2026-06-16
+
+### Changed
+
+- journal/omlx commands now invoked as plugin:agent|* — apps must register tauri-plugin-agent and grant agent:default
+
 ## [0.1.1] - 2026-06-16
 
 ### Fixed
