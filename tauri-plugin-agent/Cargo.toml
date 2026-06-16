@@ -1,0 +1,18 @@
+[package]
+name = "tauri-plugin-agent"
+version = "0.1.0"
+description = "Shared Tauri commands for the @7n/tauri-components agent: per-file request journal + omlx config."
+authors = ["nitra"]
+license = "MIT"
+edition = "2021"
+repository = "https://github.com/nitra/tauri-components"
+links = "tauri-plugin-agent"
+
+[build-dependencies]
+tauri-plugin = { version = "2", features = ["build"] }
+
+[dependencies]
+tauri = { version = "2", features = [] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+uuid = { version = "1", features = ["v4"] }

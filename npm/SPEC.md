@@ -182,11 +182,16 @@ npm/
 `task/app/src-tauri/src/lib.rs` і так само дублюватимуться у трьох бекендах.
 Спільний JS викликає `invoke('journal_create')` — якщо команди немає, впаде.
 
-**Рішення (підтверджено):** оформити **Tauri-плагін** `tauri-plugin-agent`
-(окремий crate у цьому ж репозиторії, новий workspace-member поряд із `npm/`),
-що реєструє команди `journal_*` + `omlx_config` і тримає FS-реалізацію журналу.
-Кожен додаток робить `.plugin(tauri_plugin_agent::init())` у білдері — і команди
-з'являються без копіпасти.
+**Статус: реалізовано** — crate `tauri-plugin-agent/` у цьому ж репозиторії
+реєструє команди `journal_*` + `omlx_config` (інвокуються як `plugin:agent|…`).
+Тека журналу резолвиться з `app_local_data_dir` додатка (без хардкоду bundle-id;
+override — `AGENT_REQUESTS_DIR`). Кожен додаток робить `.plugin(tauri_plugin_agent::init())`
+у білдері й грантить `agent:default` у capability — і команди з'являються без
+копіпасти. JS-пакет (`createTauriJournalStore`, `useOmlx`) уже викликає
+namespaced `plugin:agent|…`. Деталі — `tauri-plugin-agent/README.md`.
+
+> Crate **не** в npm-workspace, тож пуш у `main` його не публікує в npm —
+> додатки тягнуть його як git-залежність у `Cargo.toml`.
 
 - npm не може містити Rust → це **окремий артефакт**: crates.io або git-залежність
   у `Cargo.toml` кожного додатка.

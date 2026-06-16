@@ -1,0 +1,11 @@
+"$schema" = "schemas/schema.json"
+
+[default]
+description = "Allow all agent commands: request journal (create/load/update/list) and omlx config."
+permissions = [
+    "allow-journal-create",
+    "allow-journal-load",
+    "allow-journal-update",
+    "allow-journal-list",
+    "allow-omlx-config",
+]

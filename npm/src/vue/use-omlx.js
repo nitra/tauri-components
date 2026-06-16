@@ -36,7 +36,7 @@ export function useOmlx({ storagePrefix = 'agent', defaultBaseUrl = DEFAULT_BASE
   async function loadEnv() {
     let env
     try {
-      env = await invoke('omlx_config')
+      env = await invoke('plugin:agent|omlx_config')
     }
     catch {
       return // not running under Tauri — keep localStorage / defaults
