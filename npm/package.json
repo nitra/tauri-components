@@ -4,6 +4,11 @@
   "type": "module",
   "description": "Shared LLM agent engine + Vue/Quasar UI for Tauri apps (chat, journal, trust-tier approval).",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nitra/tauri-components.git",
+    "directory": "npm"
+  },
   "publishConfig": {
     "access": "public"
   },
