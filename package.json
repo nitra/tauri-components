@@ -1,0 +1,8 @@
+{
+  "workspaces": [
+    "npm"
+  ],
+  "devDependencies": {
+    "@nitra/cursor": "^11.4.0"
+  }
+}
