@@ -1,8 +1,14 @@
 {
+  "private": true,
   "workspaces": [
     "npm"
   ],
+  "type": "module",
+  "scripts": {
+    "test": "vitest run"
+  },
   "devDependencies": {
-    "@nitra/cursor": "^11.4.0"
+    "@nitra/cursor": "^11.4.0",
+    "vitest": "^4.1.8"
   }
 }

@@ -1,0 +1,9 @@
+// `@7n/tauri-components/vue` — Vue + Tauri composables. Wires the core agent kit
+// to the webview (omlx over tauri-http, tools/journal over Tauri invoke).
+// Requires the host app to provide vue + @tauri-apps/* (peer deps) and the
+// tauri-plugin-agent backend commands.
+
+export { useAgent } from './use-agent.js'
+export { useOmlx } from './use-omlx.js'
+export { createTauriJournalStore } from './journal-store-tauri.js'
+export { tauriTransport } from './transports.js'

@@ -9,3 +9,7 @@ dist/
 
 # @nitra/cursor — локальні git-worktree, не коміти
 .worktrees/
+
+# Test artifacts: Stryker + coverage (test.mdc)
+**/reports/stryker/
+**/coverage/

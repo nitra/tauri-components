@@ -1,0 +1,29 @@
+amends "package://github.com/jdx/hk/releases/download/v1.47.0/hk@1.47.0#/Config.pkl"
+
+local linters = new Mapping<String, Step> {
+    // Regenerate the published TypeScript declarations from the headless core
+    // (src/index.js + src/core) whenever package JS changes, then stage them so
+    // npm/types/ stays in sync with the source (see n-npm-module, variant A).
+    ["gen-types"] {
+        glob = "npm/src/**/*.js"
+        dir = "npm"
+        check = "bunx -p typescript tsc -p tsconfig.emit-types.json"
+        fix = "bunx -p typescript tsc -p tsconfig.emit-types.json"
+        stage = "npm/types"
+    }
+}
+
+hooks {
+    ["pre-commit"] {
+        fix = true
+        stash = "git"
+        steps = linters
+    }
+    ["fix"] {
+        fix = true
+        steps = linters
+    }
+    ["check"] {
+        steps = linters
+    }
+}
