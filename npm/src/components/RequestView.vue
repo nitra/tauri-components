@@ -1,9 +1,6 @@
 <template>
   <div class="req-view">
-    <span class="state-pill" :style="{ '--c': statusColor }">
-      <span class="state-pill__dot" />
-      {{ result.status }}
-    </span>
+    <StatePill :status="result.status" />
 
     <div v-if="result.summary" class="req-summary">{{ result.summary }}</div>
     <div v-if="result.question" class="req-summary">{{ result.question }}</div>
@@ -23,24 +20,11 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import StatePill from './StatePill.vue'
 
-const STATUS_COLOR = {
-  pending: '#8e8e93',
-  running: '#0a84ff',
-  done: '#30d158',
-  partial: '#ff9f0a',
-  needs_clarification: '#64d2ff',
-  needs_approval: '#ff9f0a',
-  failed: '#ff453a',
-  rejected: '#8e8e93',
-}
-
-const props = defineProps({
+defineProps({
   result: { type: Object, required: true },
 })
-
-const statusColor = computed(() => STATUS_COLOR[props.result.status] ?? '#8e8e93')
 </script>
 
 <style scoped>
@@ -75,27 +59,5 @@ const statusColor = computed(() => STATUS_COLOR[props.result.status] ?? '#8e8e93
   font-size: 11px;
   opacity: 0.8;
   overflow-wrap: anywhere;
-}
-
-.state-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  align-self: flex-start;
-  height: 20px;
-  padding: 0 8px;
-  border-radius: 6px;
-  font-family: 'SF Mono', ui-monospace, 'JetBrains Mono', monospace;
-  font-size: 11px;
-  color: var(--c);
-  background: color-mix(in srgb, var(--c) 14%, transparent);
-  border: 1px solid color-mix(in srgb, var(--c) 28%, transparent);
-}
-
-.state-pill__dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--c);
 }
 </style>

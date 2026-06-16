@@ -16,10 +16,7 @@
 
     <div v-for="rec in records" :key="rec.id" class="audit-row">
       <div @click="toggle(rec.id)" class="audit-head">
-        <span class="state-pill" :style="{ '--c': statusColor(rec.status) }">
-          <span class="state-pill__dot" />
-          {{ rec.status }}
-        </span>
+        <StatePill :status="rec.status" />
         <span class="audit-actor">{{ rec.actor?.kind }}{{ rec.actor?.id ? `:${rec.actor.id}` : '' }}</span>
         <span class="audit-intent">{{ rec.intent }}</span>
         <q-space />
@@ -54,17 +51,7 @@ import { ref } from 'vue'
 import { useQuasar } from 'quasar'
 import BaseDialog from './BaseDialog.vue'
 import RequestView from './RequestView.vue'
-
-const STATUS_COLOR = {
-  pending: '#8e8e93',
-  running: '#0a84ff',
-  done: '#30d158',
-  partial: '#ff9f0a',
-  needs_clarification: '#64d2ff',
-  needs_approval: '#ff9f0a',
-  failed: '#ff453a',
-  rejected: '#8e8e93',
-}
+import StatePill from './StatePill.vue'
 
 // The agent gateway (journal + respond + approve) is injected by the host app,
 // keeping this dialog domain-free.
@@ -81,14 +68,6 @@ const records = ref([])
 const loading = ref(false)
 const expandedId = ref(null)
 const busyId = ref(null)
-
-/**
- * @param {string} status request status
- * @returns {string} accent color
- */
-function statusColor(status) {
-  return STATUS_COLOR[status] ?? '#8e8e93'
-}
 
 /**
  * @param {number} millis epoch millis
@@ -233,27 +212,5 @@ async function onApprove(rec, ok) {
 
 .audit-body {
   padding: 6px 4px 12px;
-}
-
-.state-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  height: 20px;
-  padding: 0 8px;
-  border-radius: 6px;
-  font-family: 'SF Mono', ui-monospace, 'JetBrains Mono', monospace;
-  font-size: 11px;
-  color: var(--c);
-  background: color-mix(in srgb, var(--c) 14%, transparent);
-  border: 1px solid color-mix(in srgb, var(--c) 28%, transparent);
-  flex: 0 0 auto;
-}
-
-.state-pill__dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--c);
 }
 </style>

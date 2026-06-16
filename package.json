@@ -5,7 +5,13 @@
   ],
   "type": "module",
   "scripts": {
-    "test": "vitest run"
+    "test": "vitest run",
+    "lint": "bun run lint-js && bun run lint-text && bun run lint-ga && bun run lint-rust && bun run lint-security && oxfmt .",
+    "lint-js": "bunx oxlint --fix && bunx eslint --fix . && bunx jscpd . && bunx knip --no-config-hints",
+    "lint-text": "n-cursor lint-text",
+    "lint-ga": "n-cursor lint-ga",
+    "lint-rust": "cd tauri-plugin-agent && cargo fmt --all && cargo clippy --fix --allow-staged --allow-dirty --all-targets --all-features && cargo clippy --all-targets --all-features -- -D warnings",
+    "lint-security": "trufflehog filesystem . --no-update --exclude-paths .trufflehog-exclude --results=verified,unknown --fail"
   },
   "devDependencies": {
     "@nitra/cursor": "^11.4.0",
