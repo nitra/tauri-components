@@ -19,7 +19,8 @@
       "default": "./src/index.js"
     },
     "./vue": "./src/vue/index.js",
-    "./components": "./src/components/index.js"
+    "./components": "./src/components/index.js",
+    "./testing": "./src/testing/index.js"
   },
   "files": [
     "src",
@@ -35,12 +36,14 @@
   "peerDependencies": {
     "@tauri-apps/api": "^2.0.0",
     "@tauri-apps/plugin-http": "^2.0.0",
+    "@vue/test-utils": "^2.0.0",
     "quasar": "^2.0.0",
     "vue": "^3.0.0"
   },
   "peerDependenciesMeta": {
     "@tauri-apps/api": { "optional": true },
     "@tauri-apps/plugin-http": { "optional": true },
+    "@vue/test-utils": { "optional": true },
     "quasar": { "optional": true }
   },
   "knip": {

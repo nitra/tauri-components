@@ -1,6 +1,7 @@
 import { fetch as tauriFetch } from '@tauri-apps/plugin-http'
 import { createAgentKit } from '../core/agent-kit.js'
 import { createOpenAiChat } from '../core/llm.js'
+import { listOmlxModels } from '../core/omlx-models.js'
 import { createTauriJournalStore } from './journal-store-tauri.js'
 import { tauriTransport } from './transports.js'
 import { useOmlx } from './use-omlx.js'
@@ -50,6 +51,7 @@ export function useAgent({ catalog, systemPrompt, grounding, actorTiers, actor =
     apiKey,
     saveOmlx: save,
     loadOmlxEnv: loadEnv,
+    listModels: () => listOmlxModels({ baseUrl: baseUrl.value, apiKey: apiKey.value || undefined, fetchFn: tauriFetch }),
     journal,
     request: intent => kit.request({ intent, actor, chat: chat() }),
     respond: (requestId, message) => kit.respond({ requestId, message, actor, chat: chat() }),

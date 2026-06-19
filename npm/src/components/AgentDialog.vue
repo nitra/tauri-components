@@ -14,7 +14,21 @@
 
     <template v-if="showConfig">
       <q-input v-model="baseUrl" dense outlined label="omlx base URL" />
-      <q-input v-model="model" dense outlined label="model" />
+      <q-select
+        v-model="model"
+        :options="models"
+        :loading="modelsLoading"
+        use-input
+        fill-input
+        hide-selected
+        input-debounce="0"
+        new-value-mode="add-unique"
+        dense
+        outlined
+        label="model"
+        hint="завантажені моделі omlx; можна вписати свою"
+        @filter="(_, update) => update()"
+      />
       <q-input v-model="apiKey" dense outlined label="API key" type="password" />
       <q-separator class="q-my-sm" />
     </template>
@@ -73,7 +87,7 @@ const props = defineProps({
 const emit = defineEmits(['update:modelValue', 'ran'])
 
 const $q = useQuasar()
-const { baseUrl, model, apiKey, saveOmlx, loadOmlxEnv, request, respond } = props.agent
+const { baseUrl, model, apiKey, saveOmlx, loadOmlxEnv, listModels, request, respond } = props.agent
 
 const prompt = ref('')
 const running = ref(false)
@@ -81,6 +95,8 @@ const turns = ref([])
 const requestId = ref(null)
 const logEl = ref(null)
 const showConfig = ref(false)
+const models = ref([])
+const modelsLoading = ref(false)
 
 // Labels shift once a conversation is under way (fresh request → follow-up).
 const inputLabel = computed(() => (turns.value.length ? 'Повідомлення' : 'Prompt'))
@@ -95,6 +111,16 @@ async function onShow() {
   turns.value = []
   requestId.value = null
   await loadOmlxEnv()
+  // Populate the model dropdown from the omlx server (best-effort; stays editable).
+  if (listModels) {
+    modelsLoading.value = true
+    try {
+      models.value = await listModels()
+    }
+    finally {
+      modelsLoading.value = false
+    }
+  }
 }
 
 /**
