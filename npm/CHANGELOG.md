@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.4.0] - 2026-06-19
+
+### Added
+
+- createDispatch preserves a backend error.kind on the io envelope; useAgent accepts a transport override (route some tools to JS/OPFS handlers)
+
 ## [0.3.0] - 2026-06-16
 
 ### Changed
