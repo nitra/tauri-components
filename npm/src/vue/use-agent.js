@@ -23,12 +23,13 @@ const DEFAULT_ACTOR = { kind: 'human', id: 'local' }
  * @param {Record<string, number>} [config.actorTiers] tier overrides
  * @param {{ kind: string, id: string }} [config.actor] caller identity (default human:local)
  * @param {{ storagePrefix?: string, defaultBaseUrl?: string, defaultModel?: string }} [config.omlx] omlx config options
+ * @param {(tool: object, input: object) => unknown} [config.transport] tool transport (default Tauri invoke); override to route some tools elsewhere (e.g. JS/OPFS-backed handlers)
  * @returns {object} in-app agent gateway
  */
-export function useAgent({ catalog, systemPrompt, grounding, actorTiers, actor = DEFAULT_ACTOR, omlx } = {}) {
+export function useAgent({ catalog, systemPrompt, grounding, actorTiers, actor = DEFAULT_ACTOR, omlx, transport = tauriTransport } = {}) {
   const { baseUrl, model, apiKey, save, loadEnv } = useOmlx(omlx)
   const journal = createTauriJournalStore()
-  const kit = createAgentKit({ catalog, systemPrompt, transport: tauriTransport, journal, actorTiers, grounding })
+  const kit = createAgentKit({ catalog, systemPrompt, transport, journal, actorTiers, grounding })
 
   /**
    * Build an omlx chat fn from the current config (tauri-http transport).

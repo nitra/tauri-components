@@ -44,7 +44,11 @@ export function createDispatch(catalog, transport) {
       return { ok: true, output }
     }
     catch (error) {
-      return { ok: false, error: { code: 'io', message: String(error?.message ?? error) } }
+      const envelope = { code: 'io', message: String(error?.message ?? error) }
+      // Preserve a backend-provided error kind (e.g. a typed Tauri command error)
+      // so callers can branch on it — e.g. re-auth on a 'ReauthRequired' kind.
+      if (error?.kind !== undefined) envelope.kind = error.kind
+      return { ok: false, error: envelope }
     }
   }
 }
