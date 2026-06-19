@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.4.1] - 2026-06-19
+
+### Fixed
+
+- useOmlx no longer crashes when localStorage is unavailable (component tests / SSR) — guarded reads/writes
+
 ## [0.4.0] - 2026-06-19
 
 ### Added
