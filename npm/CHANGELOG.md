@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.5.0] - 2026-06-19
+
+### Added
+
+- testing subpath (mountQuasar/mountWithQuasar vitest helpers); omlx model listing (listOmlxModels/resolveModel) + a model dropdown in AgentDialog populated from the server
+
 ## [0.4.1] - 2026-06-19
 
 ### Fixed
