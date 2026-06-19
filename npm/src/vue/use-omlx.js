@@ -15,6 +15,35 @@ import { invoke } from '@tauri-apps/api/core'
 const DEFAULT_BASE_URL = 'http://127.0.0.1:8000/v1'
 
 /**
+ * Read a localStorage value, or null when localStorage is unavailable
+ * (component tests without a DOM store, SSR).
+ * @param {string} key storage key
+ * @returns {string|null} stored value, or null
+ */
+function readStored(key) {
+  try {
+    return globalThis.localStorage?.getItem(key) ?? null
+  }
+  catch {
+    return null
+  }
+}
+
+/**
+ * Write a localStorage value; no-op when localStorage is unavailable.
+ * @param {string} key storage key
+ * @param {string} value value to store
+ */
+function writeStored(key, value) {
+  try {
+    globalThis.localStorage?.setItem(key, value)
+  }
+  catch {
+    // no localStorage (tests / SSR) — in-memory ref state is still updated
+  }
+}
+
+/**
  * @param {{ storagePrefix?: string, defaultBaseUrl?: string, defaultModel?: string }} [options] config
  * @returns {{ baseUrl: import('vue').Ref<string>, model: import('vue').Ref<string>, apiKey: import('vue').Ref<string>, save: () => void, loadEnv: () => Promise<void> }} persisted omlx config, an env loader and a saver
  */
@@ -22,8 +51,8 @@ export function useOmlx({ storagePrefix = 'agent', defaultBaseUrl = DEFAULT_BASE
   const baseUrlKey = `${storagePrefix}:omlxBaseUrl`
   const modelKey = `${storagePrefix}:omlxModel`
 
-  const baseUrl = ref(localStorage.getItem(baseUrlKey) || defaultBaseUrl)
-  const model = ref(localStorage.getItem(modelKey) || defaultModel)
+  const baseUrl = ref(readStored(baseUrlKey) || defaultBaseUrl)
+  const model = ref(readStored(modelKey) || defaultModel)
   // Filled from the global env in loadEnv(); never persisted to localStorage.
   const apiKey = ref('')
 
@@ -43,8 +72,8 @@ export function useOmlx({ storagePrefix = 'agent', defaultBaseUrl = DEFAULT_BASE
     }
     if (!env) return
     if (env.apiKey) apiKey.value = env.apiKey
-    if (env.baseUrl && !localStorage.getItem(baseUrlKey)) baseUrl.value = env.baseUrl
-    if (env.model && !localStorage.getItem(modelKey)) model.value = env.model
+    if (env.baseUrl && !readStored(baseUrlKey)) baseUrl.value = env.baseUrl
+    if (env.model && !readStored(modelKey)) model.value = env.model
   }
 
   /**
@@ -52,8 +81,8 @@ export function useOmlx({ storagePrefix = 'agent', defaultBaseUrl = DEFAULT_BASE
    * persisted — it comes from the global OMLX_API_KEY env on each launch.
    */
   function save() {
-    localStorage.setItem(baseUrlKey, baseUrl.value)
-    localStorage.setItem(modelKey, model.value)
+    writeStored(baseUrlKey, baseUrl.value)
+    writeStored(modelKey, model.value)
   }
 
   return { baseUrl, model, apiKey, save, loadEnv }
