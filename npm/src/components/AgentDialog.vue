@@ -52,7 +52,7 @@
       type="textarea"
       autogrow
       :label="inputLabel"
-      hint="наприклад: Create a task named deploy in /Users/.../mt, agent mode"
+      :hint="promptHint"
     />
 
     <!-- jscpd:ignore-start — formal footer markup; jscpd html-mode aligns its
@@ -83,6 +83,7 @@ import RequestView from './RequestView.vue'
 const props = defineProps({
   modelValue: { type: Boolean, default: false },
   agent: { type: Object, required: true },
+  promptHint: { type: String, default: 'наприклад: Create a task named deploy in /Users/.../mt, agent mode' },
 })
 const emit = defineEmits(['update:modelValue', 'ran'])
 
