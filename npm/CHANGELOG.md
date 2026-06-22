@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.6.0] - 2026-06-22
+
+### Changed
+
+- Додано пропс promptHint до AgentDialog.vue
+
 ## [0.5.0] - 2026-06-19
 
 ### Added
