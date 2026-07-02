@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.7.0] - 2026-07-02
+
+### Added
+
+- Фолбек на myllm-проксі: loadEnv() у useOmlx пробує `:8088/health` (timeout 400ms, кеш 12с) і, коли проксі живий, веде трафік через нього замість прямого `:8000` — runtime-only override, localStorage і кастомні baseUrl не чіпаються. Нові core-експорти: resolveOmlxBaseUrl / resolveOmlxBaseUrlCached / isDirectOmlxUrl / DIRECT_OMLX_BASE_URL / PROXY_OMLX_BASE_URL.
+
 ## [0.6.0] - 2026-06-22
 
 ### Changed
