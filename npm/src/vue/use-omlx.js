@@ -1,5 +1,7 @@
 import { ref } from 'vue'
 import { invoke } from '@tauri-apps/api/core'
+import { fetch as tauriFetch } from '@tauri-apps/plugin-http'
+import { isDirectOmlxUrl, resolveOmlxBaseUrlCached } from '../core/resolve-omlx-base-url.js'
 
 // Persisted config for the local omlx server (OpenAI-compatible MLX) that drives
 // the in-app agent. The API key / base URL come from Rust (omlx_config), which
@@ -8,6 +10,12 @@ import { invoke } from '@tauri-apps/api/core'
 // edited in the dialog and cached in localStorage; omlx_config is the default
 // when localStorage is empty. Priority for base: localStorage > omlx_config >
 // hardcoded default. The key always comes from omlx_config.
+//
+// On top of that, when the resolved base is the default local :8000, loadEnv()
+// probes the myllm reverse proxy (:8088/health, cached with a short TTL) and
+// routes through it while it is alive — a runtime-only override that is never
+// persisted, so the dialog keeps showing/editing the direct URL and a custom
+// (non-:8000) base is never silently rerouted.
 //
 // storagePrefix namespaces the localStorage keys per app (so `task` and `mlmail`
 // keep independent base/model). defaults seed first launch.
@@ -70,10 +78,15 @@ export function useOmlx({ storagePrefix = 'agent', defaultBaseUrl = DEFAULT_BASE
     catch {
       return // not running under Tauri — keep localStorage / defaults
     }
-    if (!env) return
-    if (env.apiKey) apiKey.value = env.apiKey
-    if (env.baseUrl && !readStored(baseUrlKey)) baseUrl.value = env.baseUrl
-    if (env.model && !readStored(modelKey)) model.value = env.model
+    if (env) {
+      if (env.apiKey) apiKey.value = env.apiKey
+      if (env.baseUrl && !readStored(baseUrlKey)) baseUrl.value = env.baseUrl
+      if (env.model && !readStored(modelKey)) model.value = env.model
+    }
+    // myllm proxy override — only for the default local target, runtime-only.
+    if (isDirectOmlxUrl(baseUrl.value)) {
+      baseUrl.value = await resolveOmlxBaseUrlCached({ directUrl: baseUrl.value, fetchFn: tauriFetch })
+    }
   }
 
   /**
