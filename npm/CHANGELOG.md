@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.8.0] - 2026-07-05
+
+### Added
+
+- useUpdater() у @7n/tauri-components/vue — спільна перевірка/встановлення оновлень через tauri-plugin-updater з Quasar-діалогом, винесена з mlmail/myshare/myllm/task (усі чотири мали ідентичну копію).
+
 ## [0.7.0] - 2026-07-02
 
 ### Added
