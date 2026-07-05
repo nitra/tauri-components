@@ -5,5 +5,6 @@
 
 export { useAgent } from './use-agent.js'
 export { useOmlx } from './use-omlx.js'
+export { useUpdater } from './use-updater.js'
 export { createTauriJournalStore } from './journal-store-tauri.js'
 export { tauriTransport } from './transports.js'

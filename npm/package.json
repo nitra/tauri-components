@@ -36,6 +36,8 @@
   "peerDependencies": {
     "@tauri-apps/api": "^2.0.0",
     "@tauri-apps/plugin-http": "^2.0.0",
+    "@tauri-apps/plugin-process": "^2.0.0",
+    "@tauri-apps/plugin-updater": "^2.0.0",
     "@vue/test-utils": "^2.0.0",
     "quasar": "^2.0.0",
     "vue": "^3.0.0"
@@ -43,6 +45,8 @@
   "peerDependenciesMeta": {
     "@tauri-apps/api": { "optional": true },
     "@tauri-apps/plugin-http": { "optional": true },
+    "@tauri-apps/plugin-process": { "optional": true },
+    "@tauri-apps/plugin-updater": { "optional": true },
     "@vue/test-utils": { "optional": true },
     "quasar": { "optional": true }
   },
