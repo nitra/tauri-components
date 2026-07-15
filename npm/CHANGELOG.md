@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.9.0] - 2026-07-15
+
+### Added
+
+- core/acp-agent.js — ACP-сесії (spawn/prompt/cancel), стрім session/update у форму runAgent(), перший крок міграції з прямих omlx-викликів на Agent Client Protocol
+- core/acp-kit.js — ACP-версія createAgentKit: класифікація/dispatch домен-каталогу через MCP tools/call (acp://mcp-tool-call), дзеркалення нативних ACP permission-request у той самий pendingApproval-контракт, що і approve()/AuditDialog вже розуміють. Одна активна сесія за раз.
+- vue/use-acp-agent.js — Vue-composабл useAcpAgent(): резолвинг дефолтного агента через ACP_DEFAULT_AGENT (per-машина), MIN/AVG/MAX модель-тіри на пресет (per-агент), запуск domain MCP-моста при loadEnv(). Паралельний до useAgent(), старий шлях не чіпали.
+
 ## [0.8.0] - 2026-07-05
 
 ### Added
