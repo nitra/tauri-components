@@ -108,13 +108,8 @@ pub async fn acp_spawn_agent<R: Runtime>(
 ) -> Result<String, String> {
     let session_key = Uuid::new_v4().to_string();
 
-    // `AcpAgent::from_args` treats leading `NAME=value` items as env vars, so we
-    // put those first, then the command, then its args.
-    let mut acp_args: Vec<String> = args.env.iter().map(|(k, v)| format!("{k}={v}")).collect();
-    acp_args.push(args.command.clone());
-    acp_args.extend(args.args.iter().cloned());
-
-    let agent = AcpAgent::from_args(acp_args).map_err(|e| e.to_string())?;
+    let agent = AcpAgent::from_args(build_acp_args(&args.command, &args.args, &args.env))
+        .map_err(|e| e.to_string())?;
 
     let (tx, rx) = mpsc::unbounded_channel::<SessionCommand>();
     {
@@ -259,6 +254,16 @@ pub async fn acp_spawn_agent<R: Runtime>(
     Ok(session_key)
 }
 
+/// Compose the argv `AcpAgent::from_args` expects: leading `NAME=value` env
+/// entries, then the command, then its args (`from_args` treats any leading
+/// `NAME=value`-shaped items as env vars — see `AcpAgent::from_args` docs).
+fn build_acp_args(command: &str, args: &[String], env: &HashMap<String, String>) -> Vec<String> {
+    let mut acp_args: Vec<String> = env.iter().map(|(k, v)| format!("{k}={v}")).collect();
+    acp_args.push(command.to_string());
+    acp_args.extend(args.iter().cloned());
+    acp_args
+}
+
 fn stop_reason_str(reason: &agent_client_protocol::schema::v1::StopReason) -> &'static str {
     use agent_client_protocol::schema::v1::StopReason;
     match reason {
@@ -353,5 +358,37 @@ pub fn acp_config() -> AcpConfig {
         default_agent_kind: std::env::var("ACP_DEFAULT_AGENT")
             .ok()
             .filter(|s| !s.is_empty()),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn build_acp_args_puts_env_before_command_before_args() {
+        let mut env = HashMap::new();
+        env.insert("API_KEY".to_string(), "secret".to_string());
+        let args = build_acp_args("npx", &["-y".into(), "codex-acp".into()], &env);
+        assert_eq!(args, vec!["API_KEY=secret", "npx", "-y", "codex-acp"]);
+    }
+
+    #[test]
+    fn build_acp_args_with_no_env_or_args() {
+        let args = build_acp_args("pi-acp", &[], &HashMap::new());
+        assert_eq!(args, vec!["pi-acp"]);
+    }
+
+    #[test]
+    fn stop_reason_str_covers_every_documented_reason() {
+        use agent_client_protocol::schema::v1::StopReason;
+        assert_eq!(stop_reason_str(&StopReason::EndTurn), "end_turn");
+        assert_eq!(stop_reason_str(&StopReason::MaxTokens), "max_tokens");
+        assert_eq!(
+            stop_reason_str(&StopReason::MaxTurnRequests),
+            "max_turn_requests"
+        );
+        assert_eq!(stop_reason_str(&StopReason::Refusal), "refusal");
+        assert_eq!(stop_reason_str(&StopReason::Cancelled), "cancelled");
     }
 }

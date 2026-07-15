@@ -32,3 +32,7 @@ tower = "0.5"
 # and MCP tools/call on a webview round-trip) — the agent-client-protocol crate itself
 # uses async-process/blocking internally and does not require tokio.
 tokio = { version = "1.52", features = ["rt-multi-thread", "macros", "process", "sync"] }
+
+[dev-dependencies]
+tauri = { version = "2", features = ["test"] }
+tokio = { version = "1.52", features = ["rt-multi-thread", "macros", "process", "sync", "time"] }
