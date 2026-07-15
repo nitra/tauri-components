@@ -103,7 +103,12 @@ mod tests {
     #[test]
     fn create_then_load_roundtrips() {
         let dir = tmp_dir();
-        let id = create_in(&dir, "do thing".into(), json!({ "kind": "agent", "id": "t" })).unwrap();
+        let id = create_in(
+            &dir,
+            "do thing".into(),
+            json!({ "kind": "agent", "id": "t" }),
+        )
+        .unwrap();
         let rec = load_in(&dir, &id).unwrap();
         assert_eq!(rec["intent"], "do thing");
         assert_eq!(rec["status"], "pending");
