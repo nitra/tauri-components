@@ -95,6 +95,10 @@ struct PermissionOptionView {
     #[serde(rename = "optionId")]
     option_id: String,
     name: String,
+    /// `allow_once`/`allow_always`/`reject_once`/`reject_always` — lets the
+    /// webview pick the right option for a binary approve/reject decision
+    /// without guessing from `name`.
+    kind: String,
 }
 
 /// Spawn `command args…` as an ACP agent subprocess, run `initialize` +
@@ -177,6 +181,7 @@ pub async fn acp_spawn_agent<R: Runtime>(
                             .map(|opt| PermissionOptionView {
                                 option_id: opt.option_id.0.to_string(),
                                 name: opt.name.clone(),
+                                kind: permission_option_kind_str(opt.kind).to_string(),
                             })
                             .collect();
 
@@ -262,6 +267,19 @@ fn build_acp_args(command: &str, args: &[String], env: &HashMap<String, String>)
     acp_args.push(command.to_string());
     acp_args.extend(args.iter().cloned());
     acp_args
+}
+
+fn permission_option_kind_str(
+    kind: agent_client_protocol::schema::v1::PermissionOptionKind,
+) -> &'static str {
+    use agent_client_protocol::schema::v1::PermissionOptionKind;
+    match kind {
+        PermissionOptionKind::AllowOnce => "allow_once",
+        PermissionOptionKind::AllowAlways => "allow_always",
+        PermissionOptionKind::RejectOnce => "reject_once",
+        PermissionOptionKind::RejectAlways => "reject_always",
+        _ => "unknown",
+    }
 }
 
 fn stop_reason_str(reason: &agent_client_protocol::schema::v1::StopReason) -> &'static str {
@@ -377,6 +395,27 @@ mod tests {
     fn build_acp_args_with_no_env_or_args() {
         let args = build_acp_args("pi-acp", &[], &HashMap::new());
         assert_eq!(args, vec!["pi-acp"]);
+    }
+
+    #[test]
+    fn permission_option_kind_str_covers_every_documented_kind() {
+        use agent_client_protocol::schema::v1::PermissionOptionKind;
+        assert_eq!(
+            permission_option_kind_str(PermissionOptionKind::AllowOnce),
+            "allow_once"
+        );
+        assert_eq!(
+            permission_option_kind_str(PermissionOptionKind::AllowAlways),
+            "allow_always"
+        );
+        assert_eq!(
+            permission_option_kind_str(PermissionOptionKind::RejectOnce),
+            "reject_once"
+        );
+        assert_eq!(
+            permission_option_kind_str(PermissionOptionKind::RejectAlways),
+            "reject_always"
+        );
     }
 
     #[test]

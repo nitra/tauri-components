@@ -3,6 +3,18 @@
 // consumers (CLI orchestrators, MCP wrappers); the Vue/Quasar layers live under
 // the ./vue and ./components subpaths.
 
+export {
+  acpConfig,
+  cancelAcpSession,
+  createAcpSession,
+  onAcpPermissionRequest,
+  onAcpToolCall,
+  respondAcpPermission,
+  respondAcpToolCall,
+  runAcpTurn,
+  startAcpMcpBridge,
+} from './core/acp-agent.js'
+export { createAcpAgentKit } from './core/acp-kit.js'
 export { createAgentKit } from './core/agent-kit.js'
 export { handleApprove, handleRequest, handleRespond } from './core/agent-handler.js'
 export { createDispatch, validateInput } from './core/dispatch.js'
