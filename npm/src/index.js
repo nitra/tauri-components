@@ -14,6 +14,7 @@ export {
   runAcpTurn,
   startAcpMcpBridge,
 } from './core/acp-agent.js'
+export { CODEX_ACP_AGENT_PRESET } from './core/acp-agent-presets.js'
 export { createAcpAgentKit } from './core/acp-kit.js'
 export { createAgentKit } from './core/agent-kit.js'
 export { handleApprove, handleRequest, handleRespond } from './core/agent-handler.js'
