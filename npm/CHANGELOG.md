@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.10.1] - 2026-07-16
+
+### Changed
+
+- chore(lint): дозаповнено cspell-словник, авто-fix markdownlint у docs/
+
 ## [0.10.0] - 2026-07-16
 
 ### Added
