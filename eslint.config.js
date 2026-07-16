@@ -2,7 +2,7 @@ import { getConfig } from '@nitra/eslint-config'
 
 export default [
   {
-    ignores: [
+    ignores: ['**/auto-imports.d.ts', 
       '**/*.md',
       'npm/types/**',
       'tauri-plugin-agent/target/**',

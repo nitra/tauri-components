@@ -48,10 +48,17 @@ const NORMALIZE_HOOK = '.claude/hooks/normalize-decisions.sh'
  */
 export default function (pi: PiExec): void {
   pi.on('agent_end', async (_event, ctx) => {
-    // Recursion guard: bash спавнить LLM CLI (claude/cursor-agent), той може
+    // Recursion guard: bash спавнить LLM CLI (claude/cursor-agent/pi), той може
     // стартувати pi-сесію. Bash виставляє ці env-vars перед спавном — child
     // inheritance ловить рекурсивний trigger тут.
     if (env.CAPTURE_DECISIONS_RUNNING || env.ADR_NORMALIZE_RUNNING) {
+      return
+    }
+
+    // Підкоманди-оркестратори (JS-orchestrated lint/skill/taze/release/...) виставляють
+    // ADR_HOOKS_SKIP=1 перед запуском — не серіалізуємо transcript і не запускаємо
+    // жоден із hooks (spec 2026-06-30).
+    if (env.ADR_HOOKS_SKIP) {
       return
     }
 
@@ -62,10 +69,10 @@ export default function (pi: PiExec): void {
         .filter(e => e.message?.role === 'user' || e.message?.role === 'assistant')
         .map(e => JSON.stringify({ type: e.message?.role, message: e.message }))
         .join('\n')
-      jsonlPath = join(tmpdir(), `n-cursor-pi-transcript-${Date.now()}-${randomUUID()}.jsonl`)
+      jsonlPath = join(tmpdir(), `n-rules-pi-transcript-${Date.now()}-${randomUUID()}.jsonl`)
       writeFileSync(jsonlPath, lines + '\n', 'utf8')
     } catch (error) {
-      ctx.ui?.notify?.(`@nitra/cursor: transcript serialization failed — ${(error as Error).message}`, 'error')
+      ctx.ui?.notify?.(`@7n/rules: transcript serialization failed — ${(error as Error).message}`, 'error')
       return
     }
 

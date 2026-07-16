@@ -17,6 +17,7 @@
       <q-select
         v-model="model"
         :options="models"
+        @filter="(_, update) => update()"
         :loading="modelsLoading"
         use-input
         fill-input
@@ -27,7 +28,6 @@
         outlined
         label="model"
         hint="завантажені моделі omlx; можна вписати свою"
-        @filter="(_, update) => update()"
       />
       <q-input v-model="apiKey" dense outlined label="API key" type="password" />
       <q-separator class="q-my-sm" />

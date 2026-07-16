@@ -29,7 +29,10 @@ function fakeJournal() {
   }
 }
 
-/** Transport that echoes which tool ran (records calls for assertions). */
+/**
+ * Transport that echoes which tool ran (records calls for assertions).
+ * @param calls
+ */
 function fakeTransport(calls) {
   return (tool, input) => {
     calls.push({ name: tool.name, input })
@@ -38,7 +41,11 @@ function fakeTransport(calls) {
   }
 }
 
-/** A chat fn that replays a scripted queue of assistant messages and records prompts. */
+/**
+ * A chat fn that replays a scripted queue of assistant messages and records prompts.
+ * @param queue
+ * @param seenSystems
+ */
 function scriptedChat(queue, seenSystems = []) {
   let i = 0
   return ({ messages }) => {

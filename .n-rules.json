@@ -1,27 +1,32 @@
 {
-  "$schema": "https://unpkg.com/@nitra/cursor/schemas/n-cursor.json",
+  "$schema": "https://unpkg.com/@7n/rules/schemas/n-rules.json",
   "rules": [
     "adr",
     "bun",
     "changelog",
     "doc-files",
-    "js-lint",
-    "js-lint-ci",
+    "ga",
+    "js",
     "js-run",
+    "local-ai",
     "npm-module",
+    "rust",
     "security",
+    "style",
     "test",
-    "text"
+    "text",
+    "vue"
   ],
   "skills": [
     "adr-normalize",
-    "coverage-fix",
+    "brainstorming",
     "doc-files",
     "lint",
     "llm-patch",
     "publish-telegram",
-    "start-check",
-    "taze",
-    "worktree"
+    "taze"
+  ],
+  "plugins": [
+    "@7n/rules-ci-github"
   ]
 }

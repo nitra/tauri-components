@@ -25,6 +25,7 @@
   "files": [
     "src",
     "types",
+    "CHANGELOG.md",
     "!**/*.test.*",
     "!**/*.spec.*",
     "!**/__tests__/**",

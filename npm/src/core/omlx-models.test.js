@@ -12,15 +12,15 @@ describe('listOmlxModels', () => {
 
   it('maps the OpenAI /models shape to ids and adds the bearer header', async () => {
     const fetchFn = okFetch({ data: [{ id: 'gemma' }, { id: 'qwen' }, {}] })
-    expect(await listOmlxModels({ baseUrl: 'http://x/v1', apiKey: 'k', fetchFn })).toEqual(['gemma', 'qwen'])
-    expect(fetchFn).toHaveBeenCalledWith('http://x/v1/models', expect.objectContaining({
+    expect(await listOmlxModels({ baseUrl: "https://x/v1", apiKey: 'k', fetchFn })).toEqual(['gemma', 'qwen'])
+    expect(fetchFn).toHaveBeenCalledWith("https://x/v1/models", expect.objectContaining({
       headers: { authorization: 'Bearer k' },
     }))
   })
 
   it('returns [] on a non-ok response or a throw', async () => {
-    expect(await listOmlxModels({ baseUrl: 'http://x/v1', fetchFn: vi.fn().mockResolvedValue({ ok: false }) })).toEqual([])
-    expect(await listOmlxModels({ baseUrl: 'http://x/v1', fetchFn: vi.fn().mockRejectedValue(new Error('down')) })).toEqual([])
+    expect(await listOmlxModels({ baseUrl: "https://x/v1", fetchFn: vi.fn().mockResolvedValue({ ok: false }) })).toEqual([])
+    expect(await listOmlxModels({ baseUrl: "https://x/v1", fetchFn: vi.fn().mockRejectedValue(new Error('down')) })).toEqual([])
   })
 })
 
