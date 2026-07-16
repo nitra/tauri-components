@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.10.0] - 2026-07-16
+
+### Added
+
+- core/acp-agent-presets.js — CODEX_ACP_AGENT_PRESET: спільний для всіх застосунків-споживачів пресет запуску codex через ACP (npx @agentclientprotocol/codex-acp — гола назва "codex-acp" не опублікована), MIN/AVG/MAX тіри за схемою назв релізів codex (gpt-5.6-luna/terra/sol) через CODEX_CONFIG. Експортовано з npm/src/index.js.
+
 ## [0.9.0] - 2026-07-15
 
 ### Added
