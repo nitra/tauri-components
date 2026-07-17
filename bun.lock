@@ -4,7 +4,7 @@
   "workspaces": {
     "": {
       "devDependencies": {
-        "@7n/rules": "^1.7.5",
+        "@7n/rules": "^1.8.0",
         "@7n/rules-ci-github": "^1.2.2",
         "@nitra/cspell-dict": "^2.1.0",
         "@nitra/eslint-config": "^3.10.0",
@@ -17,7 +17,7 @@
     },
     "npm": {
       "name": "@7n/tauri-components",
-      "version": "0.9.0",
+      "version": "0.10.1",
       "dependencies": {
         "marked": "^18.0.5",
       },
@@ -49,7 +49,7 @@
 
     "@7n/mt-linux-x64": ["@7n/mt-linux-x64@0.5.1", "", { "os": "linux", "cpu": "x64" }, "sha512-c4b1c435vfGZcRKkLnWcoKs8O6KTATFFx6gPGnid4ee+JDqzyhtxb5kzxYkcTQySO8iBHPAtUMEOBCHDrF1UjQ=="],
 
-    "@7n/rules": ["@7n/rules@1.7.5", "", { "dependencies": { "@7n/llm-lib": "^2.7.0", "@7n/mt": "^0.5.1", "@zed-industries/agent-client-protocol": "^0.4.5", "ajv": "^8.20.0", "cli-progress": "^3.12.0", "eslint": "^10.4.1", "github-actionlint": "^1.7.12", "globby": "^16.0.0", "ignore": "^7.0.5", "jscpd": "^5.0.11", "knip": "^6.22.0", "markdownlint-cli2": "^0.22.1", "oxc-parser": "^0.137.0", "oxlint": "^1.68.0", "picomatch": "^4.0.4", "smol-toml": "^1.7.0", "v8r": "^6.1.0", "yaml": "^2.9.0", "zod": "^4.4.3" }, "optionalDependencies": { "@agentclientprotocol/claude-agent-acp": "^0.59.0", "@earendil-works/pi-ai": "0.80.2", "@earendil-works/pi-coding-agent": "0.80.2" }, "bin": { "n-rules": "bin/n-rules.js", "n-cursor": "bin/n-rules.js" } }, "sha512-tmR+wCuKNS+AxixkfNK75zqNJ8hmgizOXn17xDHAz2mTY3Htkg4Ol99AUN1xgnYrybMt4Au7eYaUL1p1f7yeVg=="],
+    "@7n/rules": ["@7n/rules@1.8.0", "", { "dependencies": { "@7n/llm-lib": "^2.7.0", "@7n/mt": "^0.5.1", "@zed-industries/agent-client-protocol": "^0.4.5", "ajv": "^8.20.0", "cli-progress": "^3.12.0", "eslint": "^10.4.1", "github-actionlint": "^1.7.12", "globby": "^16.0.0", "ignore": "^7.0.5", "jscpd": "^5.0.11", "knip": "^6.22.0", "markdownlint-cli2": "^0.22.1", "oxc-parser": "^0.137.0", "oxlint": "^1.68.0", "picomatch": "^4.0.4", "smol-toml": "^1.7.0", "v8r": "^6.1.0", "yaml": "^2.9.0", "zod": "^4.4.3" }, "optionalDependencies": { "@agentclientprotocol/claude-agent-acp": "^0.59.0", "@earendil-works/pi-ai": "0.80.2", "@earendil-works/pi-coding-agent": "0.80.2" }, "bin": { "n-rules": "bin/n-rules.js", "n-cursor": "bin/n-rules.js" } }, "sha512-+mxZ3sb2NJo2KzGOKtZaK0kFfNvKEipmxiNuplmzToMRV2yeTS1+QDq/GOE7cujkIqZNXUPfOJiEgYFE2UQYHA=="],
 
     "@7n/rules-ci-github": ["@7n/rules-ci-github@1.2.2", "", { "peerDependencies": { "@7n/rules": ">=1.2.0" } }, "sha512-xkg9eYenP5tI+ncO9URv+caSKxI1WpxWSAUmyOnVxgk5A2iKvGKWzgpXicuamFMLH4S6VV/y90+D4qCeqTblJA=="],
 
