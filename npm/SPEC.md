@@ -19,24 +19,31 @@ Vue 3.5 + Quasar 2.20 + Vite. Це робить спільний пакет ре
 У `task` майже весь агентний код **уже універсальний** — доменна прив'язка
 зосереджена у двох місцях:
 
-| Доменне (лишається в додатку)                | Універсальне (їде в пакет)                         |
-| -------------------------------------------- | ------------------------------------------------- |
-| `tool/catalog.js` — перелік інструментів     | `tool/llm.js` — `runAgent`, `createOpenAiChat`    |
-| `createSystemPrompt` (текст про mt-графи)    | `tool/agent-handler.js` — request/respond/approve |
-| Rust-команди інструментів (`scan_tasks`, …)  | `tool/dispatch.js`, `scope.js`, `manifest.js`     |
-| `task-create.js::validateTaskName`           | `tool/transports.js` (Tauri invoke)               |
-|                                              | `tool/journal-store-tauri.js`                     |
-|                                              | `composables/use-omlx.js`, `use-agent.js`         |
-|                                              | всі 5 компонентів                                 |
+| Доменне (лишається в додатку)                | Універсальне (їде в пакет)                              |
+| -------------------------------------------- | -------------------------------------------------------- |
+| `tool/catalog.js` — перелік інструментів     | `core/acp-agent.js` — spawn/prompt/cancel зовнішнього ACP-агента |
+| Presets для CLI (codex/claude/cursor/pi)     | `core/acp-kit.js` — `createAcpAgentKit`: request/respond/approve |
+| Rust-команди інструментів (`scan_tasks`, …)  | `core/dispatch.js`, `scope.js`, `manifest.js`             |
+| `task-create.js::validateTaskName`           | `core/transports.js` (Tauri invoke)                       |
+|                                              | `vue/journal-store-tauri.js`                               |
+|                                              | `vue/use-acp-agent.js`                                      |
+|                                              | всі 5 компонентів                                          |
 
 **Проблема:** зараз `manifest.js`, `scope.js`, `dispatch.js` статично імпортують
 `catalog.js` як модуль-сінглтон. Пакет не може зашити в себе task-каталог.
 
 **Рішення:** інвертувати залежність — каталог стає **аргументом**, а не імпортом.
-Чисті функції без стану (`validateInput`, `toJsonSchema`, `runAgent`,
-`createOpenAiChat`, `finalize`) лишаються stateless і експортуються напряму;
-каталог-залежні (`getTool`, `toolManifest`, `scopedManifest`, `classify`,
-`createDispatch`) зв'язуються всередині фабрики `createAgentKit(config)`.
+Чисті функції без стану (`validateInput`, `toJsonSchema`) лишаються stateless і
+експортуються напряму; каталог-залежні (`getTool`, `toolManifest`,
+`scopedManifest`, `classify`, `createDispatch`) зв'язуються всередині фабрики
+`createAcpAgentKit(config)`.
+
+> Історична примітка: перша ітерація пакета мала власний chat-completion loop
+> (`runAgent`/`createOpenAiChat` у `core/llm.js`, зв'язаний через
+> `createAgentKit`/`useAgent()` й omlx-конфіг `use-omlx.js`). Цей шлях повністю
+> видалено — єдиний агентний шлях тепер ACP (`createAcpAgentKit`/`useAcpAgent()`,
+> §3.2–3.3), який спавнить зовнішній CLI-агент (codex/claude/cursor/pi) замість
+> прямих HTTP-викликів до omlx-сервера.
 
 ## 3. Публічний API
 
@@ -46,7 +53,7 @@ Vue 3.5 + Quasar 2.20 + Vite. Це робить спільний пакет ре
 ```jsonc
 // npm/package.json → "exports"
 {
-  ".":        "./src/index.js",        // ядро (без Vue): tool surface + agent loop
+  ".":        "./src/index.js",        // ядро (без Vue): tool surface + ACP agent kit
   "./vue":     "./src/vue/index.js",    // композабли (vue + tauri)
   "./components": "./src/components/index.js" // .vue компоненти (vue + quasar)
 }
@@ -56,61 +63,80 @@ Vue 3.5 + Quasar 2.20 + Vite. Це робить спільний пакет ре
 
 ```js
 // stateless, без каталогу
-export function runAgent({ prompt, messages, dispatch, chat, maxSteps, system, tools, gate }) // → { content, steps, trace, messages, stopped?, pendingApproval? }
-export function createOpenAiChat({ baseUrl, model, apiKey, fetchFn }) // → chat(req)
 export function validateInput(tool, input) // → string|null
 export function toJsonSchema(input)        // → JSON Schema
 
+// ACP session driver (spawn/prompt/cancel зовнішнього агента + MCP-міст)
+export { acpConfig, cancelAcpSession, createAcpSession, onAcpPermissionRequest,
+         onAcpToolCall, respondAcpPermission, respondAcpToolCall, runAcpTurn,
+         startAcpMcpBridge } // з core/acp-agent.js
+export { CODEX_ACP_AGENT_PRESET } // з core/acp-agent-presets.js — готовий MIN/AVG/MAX пресет для codex
+
 // фабрика, зв'язана з каталогом додатка
-export function createAgentKit(config) // див. 3.2
+export function createAcpAgentKit(config) // див. 3.2
 ```
 
-### 3.2 `createAgentKit(config)` — серце інтеграції
+### 3.2 `createAcpAgentKit(config)` — серце інтеграції
 
 ```js
-const kit = createAgentKit({
-  catalog,          // обов'язково: масив TOOLS додатка (форма як task/catalog.js)
-  systemPrompt,     // string | (ctx) => string — доменний промпт
-  transport,        // (tool, input) => Promise<unknown> — напр. tauriTransport
+const kit = createAcpAgentKit({
+  catalog,          // обов'язково: масив TOOLS додатка (форма як task/catalog.js) —
+                    // проксується зовнішньому ACP-агенту через доменний MCP-міст
+  transport,        // (tool, input) => Promise<unknown> — напр. tauriTransport;
+                    // без нього kit chat-only (без доменних MCP tools)
   journal,          // store { create, load, update, list }
   actorTiers,       // optional: { human: 2, agent: 1 } (дефолт як зараз)
-  grounding,        // optional: { tool: 'workspaces', inject(ctx) } — підстановка
-                    //           списку для conversational grounding (зараз — workspaces)
 })
 
 // kit повертає:
-kit.dispatch          // (name, input) => envelope        — зв'язаний з transport
-kit.toolManifest      // (allow?) => OpenAI tools
-kit.classify          // (actor, name) => 'allow'|'approval'|'deny'
-kit.scopedManifest    // (actor) => tools
-kit.request           // ({ intent, actor, chat }) => result
-kit.respond           // ({ requestId, message, actor, chat }) => result
-kit.approve           // ({ requestId, approve }) => result
+kit.request   // ({ intent, agent }) => envelope  — agent = createAcpSession-параметри (agentKind/command/args/env/cwd/…)
+kit.respond   // ({ requestId, message }) => envelope — продовжує активну сесію
+kit.approve   // ({ requestId, approve }) => envelope — вирішує MCP tool-call або нативний ACP permission-request
 ```
 
-`request/respond/approve` — це поточні `handleRequest/handleRespond/handleApprove`,
-але `journal`, `dispatch`, `tools`, `gate` беруться з kit, а не передаються щоразу.
+На відміну від старого `createAgentKit` (видалено), тут **не** ведеться власний
+chat-completion loop: зовнішній ACP-агент (spawned процес) веде свій цикл сам і
+робить доменні tool-calls через Rust-side MCP-міст — `kit` лише слухає
+`acp://mcp-tool-call`/`acp://permission-request` й журналить результат. Активна
+одна сесія за раз (`AgentDialog` і так веде одну живу розмову).
+
+Доменний системний промпт більше не передається явно (`systemPrompt` видалено):
+ACP-агент — це той самий CLI, яким користується розробник (codex/claude/cursor/
+pi), і він читає контекст проєкту з `cwd` (напр. `AGENTS.md`/`CLAUDE.md`) так
+само, як і в інтерактивній роботі.
 
 ### 3.3 `@7n/tauri-components/vue`
 
 ```js
-export function useAgent(config)  // фабрика-композабл: будує kit + omlx chat (tauri-http) +
-                                  // journal (Tauri) + actor; повертає
-                                  // { baseUrl, model, apiKey, saveOmlx, loadOmlxEnv,
-                                  //   journal, request, respond, approve }
-export function useOmlx(options)  // { storagePrefix, defaultBaseUrl, defaultModel }
+export function useAcpAgent(config) // фабрика-композабл: будує kit + резолвинг
+                                    // агента/тіру + journal (Tauri) + domain MCP-міст
 ```
 
-`useAgent(config)` отримує `{ catalog, systemPrompt, grounding }` додатка і
-всередині сам збирає `tauriTransport`, `createTauriJournalStore`, `useOmlx`.
-Тобто додаток пише тонку обгортку:
+```js
+useAcpAgent({
+  catalog,       // обов'язково: масив TOOLS додатка — передається у доменний MCP-міст
+  agents,        // Record<'codex'|'claude'|'cursor'|'pi', { command, args?, env?, tiers }>
+                // — presets запуску кожного агента; MIN/AVG/MAX тіри в tiers
+  defaultTier,   // optional, дефолт 'AVG'
+  cwd,           // обов'язково: робоча директорія сесії (абсолютний шлях)
+  actorTiers,    // optional: max executable tier rank per actor kind
+  transport,     // optional, дефолт tauriTransport
+})
+// → { agentKind, modelTier, defaultAgentKind, availableAgentKinds, availableTiers,
+//     loadEnv, journal, request, respond, approve }
+```
+
+`loadEnv()` читає per-машинний дефолтний агент (`ACP_DEFAULT_AGENT` через
+`acp_config()`) і запускає доменний MCP-міст один раз — викликати перед першим
+`request()`, аналогічно до того, як стара `useOmlx().loadEnv()` резолвила
+omlx base URL один раз. Додаток пише тонку обгортку:
 
 ```js
-// app/src/composables/use-agent.js (у кожному додатку — 5 рядків)
-import { useAgent as useAgentBase } from '@7n/tauri-components/vue'
+// app/src/composables/use-agent.js (у кожному додатку — кілька рядків)
+import { useAcpAgent } from '@7n/tauri-components/vue'
+import { CODEX_ACP_AGENT_PRESET } from '@7n/tauri-components'
 import { catalog } from '../tool/catalog.js'
-import { systemPrompt } from '../tool/prompt.js'
-export const useAgent = () => useAgentBase({ catalog, systemPrompt })
+export const useAgent = () => useAcpAgent({ catalog, cwd: projectRoot, agents: { codex: CODEX_ACP_AGENT_PRESET } })
 ```
 
 ### 3.4 `@7n/tauri-components/components`
@@ -118,17 +144,17 @@ export const useAgent = () => useAgentBase({ catalog, systemPrompt })
 Експортує: `AgentDialog`, `AuditDialog`, `RequestView`, `BaseDialog`,
 `DialogActions`.
 
-**Контракт декаплінгу:** `AgentDialog` зараз викликає `useAgent()` всередині.
-Робимо його чистим — приймає вже зібраний агент через проп:
+**Контракт декаплінгу:** компоненти не викликають `useAcpAgent()` самі —
+приймають уже зібраний агент через проп:
 
 ```vue
 <AgentDialog v-model="open" :agent="agent" @ran="reload" />
 ```
 
-де `const agent = useAgent()` (обгортка з 3.3). Так компонент не знає про
-каталог, тестується ізольовано, і додаток контролює конфіг. `AuditDialog`
-аналогічно приймає `:agent`. `RequestView`/`BaseDialog`/`DialogActions` уже
-чисті (props-only) — переносяться як є.
+де `const agent = useAcpAgent(config)` (обгортка з 3.3). Так компонент не знає
+про каталог, тестується ізольовано, і додаток контролює конфіг. `AuditDialog`
+аналогічно приймає `:agent`. `RequestView`/`BaseDialog`/`DialogActions` —
+чисті (props-only).
 
 ## 4. Розкладка модулів пакета
 
@@ -139,16 +165,15 @@ npm/
 ├── src/
 │   ├── index.js                 # re-export core
 │   ├── core/
-│   │   ├── llm.js               # runAgent, createOpenAiChat  (із task, без зміни)
-│   │   ├── agent-handler.js     # handleRequest/Respond/Approve (журнал/dispatch інжектяться)
+│   │   ├── acp-agent.js         # createAcpSession/runAcpTurn/… — spawn/prompt/cancel зовнішнього ACP-агента
+│   │   ├── acp-agent-presets.js # CODEX_ACP_AGENT_PRESET (MIN/AVG/MAX)
 │   │   ├── dispatch.js          # createDispatch, validateInput (catalog → param)
 │   │   ├── manifest.js          # toolManifest(catalog, allow), toJsonSchema
 │   │   ├── scope.js             # classify(catalog, actorTiers, actor, name), scopedManifest
-│   │   └── agent-kit.js         # createAgentKit — зв'язує все вище
+│   │   └── acp-kit.js           # createAcpAgentKit — зв'язує все вище + MCP-міст
 │   ├── vue/
 │   │   ├── index.js
-│   │   ├── use-agent.js         # фабрика-композабл
-│   │   ├── use-omlx.js          # параметризований storagePrefix/defaults
+│   │   ├── use-acp-agent.js     # фабрика-композабл
 │   │   ├── transports.js        # tauriTransport
 │   │   └── journal-store-tauri.js
 │   └── components/
@@ -169,35 +194,46 @@ npm/
 | Що                     | task                          | mlmail / myshare                   |
 | ---------------------- | ----------------------------- | ---------------------------------- |
 | `catalog.js`           | scan/workspaces/create/delete | свої mail/share інструменти        |
-| `systemPrompt`         | текст про mt task graphs      | свій доменний текст                |
+| `agents` (ACP presets) | codex/claude/cursor/pi команди| ті самі presets або свої           |
+| `cwd`                  | корінь проєкту task           | корінь проєкту mlmail/myshare      |
 | Rust-команди           | `scan_tasks`, `create_task`…  | свої `#[tauri::command]`           |
-| `grounding` (опц.)     | `workspaces` → mt-шляхи       | за потреби або вимкнено            |
 
 Форма каталогу не змінюється — це той самий масив об'єктів
 `{ tier, name, summary, input, tauri, validate? }`, що в `task/catalog.js`.
+Доменний промпт додаток більше не передає — ACP-агент читає контекст проєкту
+з `cwd` (`AGENTS.md`/`CLAUDE.md`), а не з explicit `systemPrompt`-конфігу.
 
-## 6. Rust-частина: Tauri-плагін (фаза 2)
+## 6. Rust-частина: Tauri-плагін
 
-`journal_*` (create/load/update/list) і `omlx_config` зараз живуть у
-`task/app/src-tauri/src/lib.rs` і так само дублюватимуться у трьох бекендах.
-Спільний JS викликає `invoke('journal_create')` — якщо команди немає, впаде.
+`journal_*` (create/load/update/list) раніше жили у `task/app/src-tauri/src/lib.rs`
+і так само дублювалися б у трьох бекендах. Спільний JS викликає
+`invoke('journal_create')` — якщо команди немає, впаде.
 
 **Статус: реалізовано** — crate `tauri-plugin-agent/` у цьому ж репозиторії
-реєструє команди `journal_*` + `omlx_config` (інвокуються як `plugin:agent|…`).
-Тека журналу резолвиться з `app_local_data_dir` додатка (без хардкоду bundle-id;
-override — `AGENT_REQUESTS_DIR`). Кожен додаток робить `.plugin(tauri_plugin_agent::init())`
-у білдері й грантить `agent:default` у capability — і команди з'являються без
-копіпасти. JS-пакет (`createTauriJournalStore`, `useOmlx`) уже викликає
-namespaced `plugin:agent|…`. Деталі — `tauri-plugin-agent/README.md`.
+реєструє команди `journal_*`, ACP-клієнтські команди (`acp_spawn_agent`,
+`acp_prompt`, `acp_cancel`, `acp_respond_permission`, `acp_config`) і доменний
+MCP-міст (`acp_register_catalog`, `acp_mcp_tool_result`, `acp_start_mcp_bridge`) —
+всі інвокуються як `plugin:agent|…`. Тека журналу резолвиться з
+`app_local_data_dir` додатка (без хардкоду bundle-id; override —
+`AGENT_REQUESTS_DIR`). Кожен додаток робить `.plugin(tauri_plugin_agent::init())`
+у білдері й грантить `agent:default` у capability (журнальні команди) —
+і команди з'являються без копіпасти. JS-пакет (`createTauriJournalStore`,
+`useAcpAgent`) уже викликає namespaced `plugin:agent|…`. Деталі —
+`tauri-plugin-agent/README.md`.
+
+> `omlx_config` — команда старого omlx/runAgent-шляху — видалена разом з
+> `useAgent()`/`use-omlx.js` (див. CHANGELOG). ACP-агент не потребує окремого
+> settings-файлу для вибору моделі: MIN/AVG/MAX резолвиться через `agents`-пресети
+> (§3.3), а який CLI спавнити — через `ACP_DEFAULT_AGENT` (`acp_config()`).
 
 > Crate **не** в npm-workspace, тож пуш у `main` його не публікує в npm —
 > додатки тягнуть його як git-залежність у `Cargo.toml`.
 
 - npm не може містити Rust → це **окремий артефакт**: crates.io або git-залежність
   у `Cargo.toml` кожного додатка.
-- Розкладка: `/Users/vitalii/www/nitra/tauri-components/crate/` (або `tauri-plugin/`).
+- Розкладка: `/Users/vitalii/www/nitra/tauri-components/tauri-plugin-agent/`.
 - Доменні команди інструментів (`scan_tasks` тощо) лишаються в кожному додатку —
-  плагін відповідає лише за журнал та omlx-конфіг.
+  плагін відповідає лише за журнал, ACP-клієнт і доменний MCP-міст.
 
 > Фаза 1 (npm-пакет) і фаза 2 (Rust-плагін) незалежні: JS можна винести першим,
 > а Rust-команди тимчасово лишити скопійованими, поки плагін не готовий.
@@ -223,20 +259,24 @@ namespaced `plugin:agent|…`. Деталі — `tauri-plugin-agent/README.md`.
 > Перевірити, що Vite додатка не виключає `node_modules/@7n` з Vue-трансформації
 > (`optimizeDeps`/`ssr.noExternal` за потреби).
 
-## 8. План міграції `task`
+## 8. План міграції `task` (виконано)
 
-1. **Підготувати пакет** (фаза 1): скопіювати core+vue+components у `npm/src/`,
+1. **Підготувати пакет**: скопіювати core+vue+components у `npm/src/`,
    виконати інверсію каталогу (caталог → параметр у `dispatch`/`manifest`/`scope`),
-   зробити `createAgentKit` і `useAgent(config)`, перенести тести.
-2. **`task` споживає пакет**: додати `@7n/tauri-components` (через `bun link` або
-   `file:` поки API нестабільне), замінити `app/src/tool/*` і `composables/use-agent.js`
-   на тонкі обгортки (лишити `catalog.js`, `prompt.js`, `task-create.js`).
+   зробити `createAgentKit` і `useAgent(config)` (омлх/runAgent-шлях), перенести тести.
+2. **`task` споживає пакет**: додати `@7n/tauri-components`, замінити
+   `app/src/tool/*` і `composables/use-agent.js` на тонкі обгортки.
    `AgentDialog`/`AuditDialog` — імпорт із пакета, передати `:agent`.
-3. **Прогнати тести** `task` (vitest) — поведінка має лишитись ідентичною; це
-   regression-гейт винесення.
+3. **Прогнати тести** `task` (vitest) — regression-гейт винесення.
 4. **Опублікувати** v0.1.0, перевести `task` з `file:` на версію.
-5. **mlmail / myshare**: додати залежність, написати свій `catalog.js` +
-   `systemPrompt` + Rust-команди (фаза 2: плагін), підключити компоненти.
+5. **mlmail / myshare**: додати залежність, написати свій `catalog.js` + Rust-команди,
+   підключити компоненти.
+
+**Фаза 2 (виконано):** перехід із власного omlx/runAgent chat-completion loop
+на Agent Client Protocol — `createAcpAgentKit`/`useAcpAgent()` (§3.2–3.3) стали
+**єдиним** агентним шляхом; `createAgentKit`/`useAgent()`/`llm.js`/`use-omlx.js`/
+`omlx-models.js`/`resolve-omlx-base-url.js` та Rust-команда `omlx_config` —
+видалені. Деталі — CHANGELOG.md.
 
 ## 9. Підтверджені рішення
 

@@ -1,14 +1,14 @@
 ---
+type: Rust Module
+title: build.rs
+resource: tauri-plugin-agent/build.rs
 docgen:
-  source: tauri-plugin-agent/build.rs
-  crc: 6a9b6487
+  crc: 877e5b88
   model: omlx/gemma-4-e4b-it-OptiQ-4bit
   score: 100
   issues: judge:inaccurate:0.98
   judgeModel: openai-codex/gpt-5.4-mini
 ---
-
-# build.rs
 
 ## Огляд
 

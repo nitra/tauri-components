@@ -1,13 +1,11 @@
 import { invoke } from '@tauri-apps/api/core'
 import { listen } from '@tauri-apps/api/event'
 
-// ACP session driver: the replacement for llm.js's runAgent()/createOpenAiChat.
-// Instead of running our own chat-completion loop, we spawn an external ACP
-// agent (codex-acp/claude-agent-acp/cursor `agent acp`/pi-acp) via the Rust
-// plugin's acp_* commands and stream its `session/update` notifications back
-// into the same {content, trace, messages, stopped?} shape runAgent() used to
-// return, so agent-handler.js's runAndJournal needs no structural changes —
-// only which turn-runner it calls.
+// ACP session driver: instead of running our own chat-completion loop, we
+// spawn an external ACP agent (codex-acp/claude-agent-acp/cursor `agent acp`/
+// pi-acp) via the Rust plugin's acp_* commands and stream its `session/update`
+// notifications back into a {content, trace, messages, stopped?} shape that
+// acp-kit.js's runAndJournal folds straight into the journal.
 //
 // Domain-tool approval (the MCP bridge's `acp://mcp-tool-call`) and native ACP
 // permission requests (`acp://permission-request`) are separate event streams
@@ -30,9 +28,18 @@ import { listen } from '@tauri-apps/api/event'
  * @param {boolean} [params.allowTerminal] grant terminal/*
  * @returns {Promise<{sessionKey: string, agentKind: string}>} session handle
  */
-export async function createAcpSession({ agentKind, command, args = [], env = {}, cwd, mcpBridgeUrl, allowFs = false, allowTerminal = false }) {
+export async function createAcpSession({
+  agentKind,
+  command,
+  args = [],
+  env = {},
+  cwd,
+  mcpBridgeUrl,
+  allowFs = false,
+  allowTerminal = false
+}) {
   const sessionKey = await invoke('plugin:agent|acp_spawn_agent', {
-    args: { command, args, env, cwd, mcpBridgeUrl, allowFs, allowTerminal },
+    args: { command, args, env, cwd, mcpBridgeUrl, allowFs, allowTerminal }
   })
   return { sessionKey, agentKind }
 }
@@ -70,7 +77,7 @@ function applySessionUpdate(state, update) {
       state.calls.set(update.toolCallId, {
         tool: update.title ?? update.toolCallId,
         input: update.rawInput ?? {},
-        envelope: null,
+        envelope: null
       })
       break
     }
@@ -100,7 +107,7 @@ function applySessionUpdate(state, update) {
 export async function runAcpTurn({ sessionKey, text, onChunk }) {
   const state = { text: '', messageId: null, calls: new Map() }
 
-  const unlisten = await listen('acp://session-update', (event) => {
+  const unlisten = await listen('acp://session-update', event => {
     if (event.payload?.sessionKey !== sessionKey) return
     applySessionUpdate(state, event.payload.update)
     onChunk?.(event.payload.update)
@@ -115,10 +122,9 @@ export async function runAcpTurn({ sessionKey, text, onChunk }) {
       steps: 1,
       trace,
       messages,
-      stopped: stoppedFromStopReason(stopReason),
+      stopped: stoppedFromStopReason(stopReason)
     }
-  }
-  finally {
+  } finally {
     unlisten()
   }
 }
@@ -175,7 +181,7 @@ export function respondAcpPermission(requestId, optionId) {
 
 /**
  * Register this app's tool catalog with the domain MCP bridge and start it.
- * @param {object[]} catalog tool definitions (same shape passed to `createAgentKit`)
+ * @param {object[]} catalog tool definitions (same shape passed to `createAcpAgentKit`)
  * @returns {Promise<string>} the bridge's loopback URL, e.g. `http://127.0.0.1:54321/`
  */
 export async function startAcpMcpBridge(catalog) {

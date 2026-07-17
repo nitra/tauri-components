@@ -4,9 +4,10 @@ import { createAcpAgentKit } from '../core/acp-kit.js'
 import { createTauriJournalStore } from './journal-store-tauri.js'
 import { tauriTransport } from './transports.js'
 
-// In-app ACP agent gateway — the ACP-flavored sibling of `useAgent()` (which
-// stays on the old omlx/runAgent path). Binds an app's catalog to
-// createAcpAgentKit and resolves two independent defaults per SPEC/plan:
+// In-app ACP agent gateway — the sole agent composable (the earlier
+// omlx/runAgent-based `useAgent()` has been removed; see CHANGELOG). Binds an
+// app's catalog to createAcpAgentKit and resolves two independent defaults per
+// SPEC/plan:
 //
 // - which AGENT (codex/claude/cursor/pi) — per-machine, from `ACP_DEFAULT_AGENT`
 //   (via `acp_config()`), since different developers have different CLIs
@@ -17,8 +18,7 @@ import { tauriTransport } from './transports.js'
 //   (`request(intent, { modelTier: 'MAX' })`); otherwise `defaultTier` applies.
 //
 // The domain MCP bridge is started once (`loadEnv()`) and its URL is reused
-// for every spawned session, mirroring how `useOmlx().loadEnv()` resolves the
-// omlx base URL once and reuses it.
+// for every spawned session.
 
 const DEFAULT_TIER = 'AVG'
 
@@ -32,7 +32,14 @@ const DEFAULT_TIER = 'AVG'
  * @param {(tool: object, input: object) => unknown} [config.transport] tool transport (default Tauri invoke)
  * @returns {object} in-app ACP agent gateway
  */
-export function useAcpAgent({ catalog, agents = {}, defaultTier = DEFAULT_TIER, cwd, actorTiers, transport = tauriTransport } = {}) {
+export function useAcpAgent({
+  catalog,
+  agents = {},
+  defaultTier = DEFAULT_TIER,
+  cwd,
+  actorTiers,
+  transport = tauriTransport
+} = {}) {
   const defaultAgentKind = ref(null)
   const agentKind = ref(null)
   const modelTier = ref(defaultTier)
@@ -51,9 +58,9 @@ export function useAcpAgent({ catalog, agents = {}, defaultTier = DEFAULT_TIER, 
     const configuredKinds = Object.keys(agents)
     try {
       const cfg = await acpConfig()
-      defaultAgentKind.value = cfg.defaultAgentKind && agents[cfg.defaultAgentKind] ? cfg.defaultAgentKind : (configuredKinds[0] ?? null)
-    }
-    catch {
+      defaultAgentKind.value =
+        cfg.defaultAgentKind && agents[cfg.defaultAgentKind] ? cfg.defaultAgentKind : (configuredKinds[0] ?? null)
+    } catch {
       defaultAgentKind.value = configuredKinds[0] ?? null
     }
     if (!agentKind.value) agentKind.value = defaultAgentKind.value
@@ -61,8 +68,7 @@ export function useAcpAgent({ catalog, agents = {}, defaultTier = DEFAULT_TIER, 
     if (catalog?.length) {
       try {
         mcpBridgeUrl.value = await startAcpMcpBridge(catalog)
-      }
-      catch {
+      } catch {
         mcpBridgeUrl.value = null
       }
     }
@@ -82,7 +88,7 @@ export function useAcpAgent({ catalog, agents = {}, defaultTier = DEFAULT_TIER, 
       args: [...(preset.args ?? []), ...(tier?.args ?? [])],
       env: { ...preset.env, ...tier?.env },
       cwd,
-      mcpBridgeUrl: mcpBridgeUrl.value ?? undefined,
+      mcpBridgeUrl: mcpBridgeUrl.value ?? undefined
     }
   }
 
@@ -91,7 +97,9 @@ export function useAcpAgent({ catalog, agents = {}, defaultTier = DEFAULT_TIER, 
     modelTier,
     defaultAgentKind,
     availableAgentKinds: computed(() => Object.keys(agents)),
-    availableTiers: computed(() => Object.entries(agents[agentKind.value]?.tiers ?? {}).map(([id, t]) => ({ id, label: t.label ?? id }))),
+    availableTiers: computed(() =>
+      Object.entries(agents[agentKind.value]?.tiers ?? {}).map(([id, t]) => ({ id, label: t.label ?? id }))
+    ),
     loadEnv,
     journal,
     /**
@@ -104,6 +112,6 @@ export function useAcpAgent({ catalog, agents = {}, defaultTier = DEFAULT_TIER, 
       return kit.request({ intent, agent: resolveSpawnArgs() })
     },
     respond: (requestId, message) => kit.respond({ requestId, message }),
-    approve: (requestId, approve) => kit.approve({ requestId, approve }),
+    approve: (requestId, approve) => kit.approve({ requestId, approve })
   }
 }

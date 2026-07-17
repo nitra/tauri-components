@@ -1,14 +1,14 @@
 ---
+type: JS Module
+title: use-acp-agent.js
+resource: npm/src/vue/use-acp-agent.js
 docgen:
-  source: npm/src/vue/use-acp-agent.js
-  crc: 227f9b8b
+  crc: 0477b0ca
   model: omlx/gemma-4-e4b-it-OptiQ-4bit
   score: 100
   issues: judge:inaccurate:0.97
   judgeModel: openai-codex/gpt-5.4-mini
 ---
-
-# use-acp-agent.js
 
 ## Огляд
 

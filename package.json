@@ -14,7 +14,7 @@
     "lint-security": "trufflehog filesystem . --no-update --exclude-paths .trufflehog-exclude --results=verified,unknown --fail"
   },
   "devDependencies": {
-    "@7n/rules": "^1.7.5",
+    "@7n/rules": "^1.8.0",
     "@7n/rules-ci-github": "^1.2.2",
     "@nitra/cspell-dict": "^2.1.0",
     "@nitra/eslint-config": "^3.10.0",
@@ -23,5 +23,8 @@
     "quasar": "^2.18.0",
     "vitest": "^4.1.8",
     "vue": "^3.5.0"
+  },
+  "stylelint": {
+    "extends": "@nitra/stylelint-config"
   }
 }

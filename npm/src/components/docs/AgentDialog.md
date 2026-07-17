@@ -1,11 +1,11 @@
 ---
+type: Vue Component
+title: AgentDialog.vue
+resource: npm/src/components/AgentDialog.vue
 docgen:
-  source: npm/src/components/AgentDialog.vue
-  crc: 197cc9c0
+  crc: aa14e51b
   model: omlx/gemma-4-e4b-it-OptiQ-4bit
 ---
-
-# AgentDialog.vue
 
 Компонент відображає діалогове вікно для взаємодії з локальною мовною моделлю (LLM) через агент. Він дозволяє користувачеві вводити запити, налаштовувати конфігурацію агента та бачити історію чату.
 

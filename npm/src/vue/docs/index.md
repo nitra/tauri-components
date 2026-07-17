@@ -1,14 +1,14 @@
 ---
+type: JS Module
+title: index.js
+resource: npm/src/vue/index.js
 docgen:
-  source: npm/src/vue/index.js
-  crc: ac7a549c
+  crc: ae0b9450
   model: omlx/gemma-4-e4b-it-OptiQ-4bit
   score: 100
   issues: judge:inaccurate:0.98
   judgeModel: openai-codex/gpt-5.4-mini
 ---
-
-# index.js
 
 ## Огляд
 

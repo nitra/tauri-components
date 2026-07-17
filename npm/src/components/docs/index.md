@@ -1,13 +1,13 @@
 ---
+type: JS Module
+title: index.js
+resource: npm/src/components/index.js
 docgen:
-  source: npm/src/components/index.js
-  crc: 42b50c52
+  crc: 6d136e3a
   model: omlx/gemma-4-e4b-it-OptiQ-4bit
   score: 100
   judgeModel: openai-codex/gpt-5.4-mini
 ---
-
-# index.js
 
 ## Огляд
 

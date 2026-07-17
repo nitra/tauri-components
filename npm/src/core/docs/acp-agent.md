@@ -1,14 +1,14 @@
 ---
+type: JS Module
+title: acp-agent.js
+resource: npm/src/core/acp-agent.js
 docgen:
-  source: npm/src/core/acp-agent.js
-  crc: e30fb954
+  crc: a9f48a2c
   model: omlx/gemma-4-e4b-it-OptiQ-4bit
   score: 100
   issues: judge:inaccurate:0.98
   judgeModel: openai-codex/gpt-5.4-mini
 ---
-
-# acp-agent.js
 
 ## Огляд
 
