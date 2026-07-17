@@ -1,13 +1,13 @@
 ---
+type: JS Module
+title: acp-kit.js
+resource: npm/src/core/acp-kit.js
 docgen:
-  source: npm/src/core/acp-kit.js
-  crc: caab4cf6
+  crc: 7838ed4e
   model: omlx/gemma-4-e4b-it-OptiQ-4bit
   score: 100
   judgeModel: openai-codex/gpt-5.4-mini
 ---
-
-# acp-kit.js
 
 ## Огляд
 

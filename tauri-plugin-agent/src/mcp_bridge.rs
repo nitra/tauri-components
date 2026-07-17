@@ -162,7 +162,7 @@ fn envelope_to_result(envelope: &Value) -> CallToolResult {
     }
 }
 
-/// Replace the registered catalog. Called once when `useAgent()` initializes
+/// Replace the registered catalog. Called once when `useAcpAgent()` initializes
 /// (and again if the app's catalog changes at runtime).
 #[tauri::command]
 pub fn acp_register_catalog(
@@ -192,7 +192,7 @@ pub fn acp_mcp_tool_result(
 }
 
 /// Start the loopback MCP HTTP server for this app (idempotent per app run —
-/// call once at `useAgent()` init) and return its base URL, e.g.
+/// call once at `useAcpAgent()` init) and return its base URL, e.g.
 /// `http://127.0.0.1:54321/`, to pass as an `mcpServers` HTTP entry to
 /// `acp_spawn_agent`.
 #[tauri::command]

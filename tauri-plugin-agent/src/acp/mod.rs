@@ -363,7 +363,7 @@ pub fn acp_respond_permission(
 
 /// Per-machine default agent kind, read from `ACP_DEFAULT_AGENT` (e.g.
 /// `codex`/`claude`/`cursor`/`pi`) — not a credential, just which CLI a given
-/// developer has installed, so no settings file like `omlx_config`.
+/// developer has installed, so no settings file needed.
 #[derive(serde::Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct AcpConfig {
