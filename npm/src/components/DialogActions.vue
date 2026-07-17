@@ -8,8 +8,7 @@
     :loading="loading"
     color="primary"
     unelevated
-    no-caps
-  />
+    no-caps />
 </template>
 
 <script setup>
@@ -20,7 +19,7 @@ defineProps({
   submitLabel: { type: String, required: true },
   icon: { type: String, default: undefined },
   disable: { type: Boolean, default: false },
-  loading: { type: Boolean, default: false },
+  loading: { type: Boolean, default: false }
 })
 const emit = defineEmits(['submit'])
 </script>

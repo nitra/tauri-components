@@ -4,7 +4,7 @@ import { classify, scopedManifest, scopedToolNames } from './scope.js'
 const catalog = [
   { tier: 'read', name: 'scan', summary: 'scan', input: {} },
   { tier: 'write', name: 'create', summary: 'create', input: {} },
-  { tier: 'destructive', name: 'remove', summary: 'remove', input: {} },
+  { tier: 'destructive', name: 'remove', summary: 'remove', input: {} }
 ]
 
 const human = { kind: 'human' }

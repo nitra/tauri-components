@@ -2,16 +2,10 @@ import { getConfig } from '@nitra/eslint-config'
 
 export default [
   {
-    ignores: ['**/auto-imports.d.ts', 
-      '**/*.md',
-      'npm/types/**',
-      'tauri-plugin-agent/target/**',
-      '.pi/**',
-      'docs/**',
-    ],
+    ignores: ['**/auto-imports.d.ts', '**/*.md', 'npm/types/**', 'tauri-plugin-agent/target/**', '.pi/**', 'docs/**']
   },
   ...getConfig({
-    vue: ['npm'],
+    vue: ['npm']
   }),
   {
     // The Vue/Tauri layer imports peer deps (vue, quasar, @tauri-apps/*) whose
@@ -19,7 +13,7 @@ export default [
     // ref/computed/invoke as "not found". Core stays covered (no peer imports).
     files: ['npm/src/vue/**', 'npm/src/components/**'],
     rules: {
-      'import-x/named': 'off',
-    },
-  },
+      'import-x/named': 'off'
+    }
+  }
 ]

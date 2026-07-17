@@ -11,8 +11,7 @@
         <q-icon
           :name="action.envelope?.ok ? 'sym_o_check_circle' : 'sym_o_error'"
           :color="action.envelope?.ok ? 'positive' : 'negative'"
-          size="14px"
-        />
+          size="14px" />
         <code>{{ action.tool }}({{ JSON.stringify(action.input) }})</code>
       </div>
     </div>
@@ -23,7 +22,7 @@
 import StatePill from './StatePill.vue'
 
 defineProps({
-  result: { type: Object, required: true },
+  result: { type: Object, required: true }
 })
 </script>
 

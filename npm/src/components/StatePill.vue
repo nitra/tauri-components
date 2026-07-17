@@ -11,7 +11,7 @@
 import { statusColor } from './status.js'
 
 defineProps({
-  status: { type: String, required: true },
+  status: { type: String, required: true }
 })
 </script>
 

@@ -20,6 +20,6 @@ export const CODEX_ACP_AGENT_PRESET = {
   tiers: {
     MIN: { label: 'GPT-5.6 Luna', env: codexModelEnv('gpt-5.6-luna') },
     AVG: { label: 'GPT-5.6 Terra', env: codexModelEnv('gpt-5.6-terra') },
-    MAX: { label: 'GPT-5.6 Sol', env: codexModelEnv('gpt-5.6-sol') },
-  },
+    MAX: { label: 'GPT-5.6 Sol', env: codexModelEnv('gpt-5.6-sol') }
+  }
 }

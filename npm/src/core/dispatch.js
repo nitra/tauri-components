@@ -20,7 +20,8 @@ export function validateInput(tool, input) {
       continue
     }
     if (spec.type === 'string' && typeof value !== 'string') return `Field "${key}" must be a string`
-    if (spec.type === 'object' && (typeof value !== 'object' || Array.isArray(value))) return `Field "${key}" must be an object`
+    if (spec.type === 'object' && (typeof value !== 'object' || Array.isArray(value)))
+      return `Field "${key}" must be an object`
   }
   return tool.validate ? tool.validate(data) : null
 }
@@ -42,8 +43,7 @@ export function createDispatch(catalog, transport) {
     try {
       const output = await transport(tool, input ?? {})
       return { ok: true, output }
-    }
-    catch (error) {
+    } catch (error) {
       const envelope = { code: 'io', message: String(error?.message ?? error) }
       // Preserve a backend-provided error kind (e.g. a typed Tauri command error)
       // so callers can branch on it — e.g. re-auth on a 'ReauthRequired' kind.

@@ -9,12 +9,15 @@ describe('CODEX_ACP_AGENT_PRESET', () => {
 
   it('defines MIN/AVG/MAX with the org codex model release names', () => {
     const models = Object.fromEntries(
-      Object.entries(CODEX_ACP_AGENT_PRESET.tiers).map(([tier, preset]) => [tier, JSON.parse(preset.env.CODEX_CONFIG).model]),
+      Object.entries(CODEX_ACP_AGENT_PRESET.tiers).map(([tier, preset]) => [
+        tier,
+        JSON.parse(preset.env.CODEX_CONFIG).model
+      ])
     )
     expect(models).toEqual({
       MIN: 'gpt-5.6-luna',
       AVG: 'gpt-5.6-terra',
-      MAX: 'gpt-5.6-sol',
+      MAX: 'gpt-5.6-sol'
     })
   })
 
