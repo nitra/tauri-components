@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.11.0] - 2026-07-17
+
+### Removed
+
+- useAgent()/createAgentKit (omlx/runAgent chat-completion шлях) видалено — `useAcpAgent()`/`createAcpAgentKit` (ACP: спавн codex/claude/cursor/pi) тепер єдиний агентний шлях. Разом з ним прибрано `core/llm.js`, `core/agent-handler.js`, `core/omlx-models.js`, `core/resolve-omlx-base-url.js`, `vue/use-omlx.js` та Rust-команду `omlx_config` (tauri-plugin-agent)
+
 ## [0.10.1] - 2026-07-16
 
 ### Changed
