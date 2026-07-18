@@ -12,5 +12,7 @@ export default {
 export const Pending = { args: { status: 'pending' } }
 export const Running = { args: { status: 'running' } }
 export const Done = { args: { status: 'done' } }
+export const Partial = { args: { status: 'partial' } }
 export const NeedsApproval = { args: { status: 'needs_approval' } }
 export const Failed = { args: { status: 'failed' } }
+export const Rejected = { args: { status: 'rejected' } }

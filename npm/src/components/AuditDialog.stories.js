@@ -30,3 +30,7 @@ export default {
 }
 
 export const Default = {}
+
+export const Empty = {
+  args: { agent: { journal: { list: () => [] }, respond: () => null, approve: () => null } }
+}
