@@ -1,7 +1,9 @@
 /** @type {import('@stryker-mutator/core').PartialStrykerOptions} */
 export default {
   testRunner: 'vitest',
-  vitest: { configFile: 'vitest.config.mjs' },
+  // vitest.config.mjs gained a `projects` array (Storybook/browser-mode) that
+  // @stryker-mutator/vitest-runner can't initialize — see vitest.stryker.config.mjs.
+  vitest: { configFile: 'vitest.stryker.config.mjs' },
   // perTest: Stryker запускає лише тести, що покривають мутовану лінію — головний приріст
   // швидкості проти command runner (де треба було б ганяти ввесь test-suite на кожен мутант).
   coverageAnalysis: 'perTest',
