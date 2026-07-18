@@ -28,6 +28,7 @@
     "CHANGELOG.md",
     "!**/*.test.*",
     "!**/*.spec.*",
+    "!**/*.stories.*",
     "!**/__tests__/**",
     "!**/fixtures/**"
   ],
@@ -56,5 +57,12 @@
   "engines": {
     "bun": ">=1.3",
     "node": ">=24"
+  },
+  "devDependencies": {
+    "@quasar/extras": "^2.0.2",
+    "@storybook/addon-vitest": "^10.5.2",
+    "@storybook/vue3-vite": "^10.5.2",
+    "@vitejs/plugin-vue": "^6.0.8",
+    "storybook": "^10.5.2"
   }
 }
