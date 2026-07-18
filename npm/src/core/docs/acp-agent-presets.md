@@ -1,10 +1,10 @@
 ---
+type: JS Module
+title: acp-agent-presets.js
+resource: npm/src/core/acp-agent-presets.js
 docgen:
-  source: npm/src/core/acp-agent-presets.js
-  crc: dc79fc55
+  crc: 5f41e5f2
 ---
-
-# acp-agent-presets.js
 
 ## Огляд
 

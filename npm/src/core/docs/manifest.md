@@ -1,13 +1,13 @@
 ---
+type: JS Module
+title: manifest.js
+resource: npm/src/core/manifest.js
 docgen:
-  source: npm/src/core/manifest.js
-  crc: 0db5edce
+  crc: cac4f084
   model: omlx/gemma-4-e4b-it-OptiQ-4bit
   score: 100
   judgeModel: openai-codex/gpt-5.4-mini
 ---
-
-# manifest.js
 
 ## Огляд
 

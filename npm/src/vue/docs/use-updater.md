@@ -1,14 +1,14 @@
 ---
+type: JS Module
+title: use-updater.js
+resource: npm/src/vue/use-updater.js
 docgen:
-  source: npm/src/vue/use-updater.js
-  crc: c988fd96
+  crc: dac06662
   model: omlx/gemma-4-e4b-it-OptiQ-4bit
   score: 100
   issues: judge:inaccurate:0.95
   judgeModel: openai-codex/gpt-5.4-mini
 ---
-
-# use-updater.js
 
 ## Огляд
 

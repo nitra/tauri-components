@@ -1,14 +1,14 @@
 ---
+type: JS Module
+title: status.js
+resource: npm/src/components/status.js
 docgen:
-  source: npm/src/components/status.js
-  crc: 352af502
+  crc: 7ef53fdd
   model: omlx/gemma-4-e4b-it-OptiQ-4bit
   score: 100
   issues: judge:inaccurate:0.96
   judgeModel: openai-codex/gpt-5.4-mini
 ---
-
-# status.js
 
 ## Огляд
 

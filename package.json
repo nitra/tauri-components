@@ -14,8 +14,7 @@
     "lint-security": "trufflehog filesystem . --no-update --exclude-paths .trufflehog-exclude --results=verified,unknown --fail"
   },
   "devDependencies": {
-    "@7n/rules": "^1.8.0",
-    "@7n/rules-ci-github": "^1.2.2",
+    "@7n/rules": "^1.14.0",
     "@nitra/cspell-dict": "^2.1.0",
     "@nitra/eslint-config": "^3.10.0",
     "@tauri-apps/api": "^2.0.0",

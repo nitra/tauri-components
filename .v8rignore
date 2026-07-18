@@ -8,3 +8,4 @@ tauri-plugin-agent/permissions/
 npm/types/
 npm/tsconfig.emit-types.json
 .claude/settings.local.json
+.claude/worktrees/**
