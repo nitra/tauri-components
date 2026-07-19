@@ -20,3 +20,16 @@ export const Default = {
     `
   })
 }
+
+export const NoIcon = {
+  args: { icon: '' },
+  render: args => ({
+    components: { BaseDialog },
+    setup: () => ({ args }),
+    template: `
+      <BaseDialog v-bind="args">
+        <p>Header has no icon when the prop is empty.</p>
+      </BaseDialog>
+    `
+  })
+}

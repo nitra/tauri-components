@@ -1,14 +1,10 @@
 ---
+type: JS Module
+title: index.js
+resource: npm/src/index.js
 docgen:
-  source: npm/src/index.js
-  crc: 4c3b4830
-  model: omlx/gemma-4-e4b-it-OptiQ-4bit
-  score: 100
-  issues: judge:inaccurate:0.99
-  judgeModel: openai-codex/gpt-5.4-mini
+  crc: 4c44e807
 ---
-
-# index.js
 
 ## Огляд
 
@@ -47,6 +43,7 @@ docgen:
 29. Створює обмежений маніфест.
 30. Отримує імена інструментів з обмеженням.
 31. Отримує конкретний інструмент.
+32. Надає спільний пресет запуску codex-агента через ACP з тірами MIN/AVG/MAX.
 
 ## Гарантії поведінки
 

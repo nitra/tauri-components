@@ -6,8 +6,7 @@
     title="Request journal"
     icon="sym_o_history"
     :width="680"
-    body-class=""
-  >
+    body-class="">
     <template #header>
       <q-btn @click="refresh" icon="sym_o_refresh" flat round dense size="sm" :loading="loading" title="Refresh" />
     </template>
@@ -36,8 +35,7 @@
               color="negative"
               unelevated
               no-caps
-              :loading="busyId === rec.id"
-            />
+              :loading="busyId === rec.id" />
             <q-btn @click="onApprove(rec, false)" label="Відхилити" flat no-caps :disable="busyId === rec.id" />
           </div>
         </div>
@@ -57,7 +55,7 @@ import StatePill from './StatePill.vue'
 // keeping this dialog domain-free.
 const props = defineProps({
   modelValue: { type: Boolean, default: false },
-  agent: { type: Object, required: true },
+  agent: { type: Object, required: true }
 })
 const emit = defineEmits(['update:modelValue', 'changed'])
 
@@ -84,11 +82,9 @@ async function refresh() {
   loading.value = true
   try {
     records.value = await journal.list()
-  }
-  catch (error) {
+  } catch (error) {
     $q.notify({ type: 'negative', message: String(error?.message ?? error) })
-  }
-  finally {
+  } finally {
     loading.value = false
   }
 }
@@ -111,11 +107,9 @@ async function onRespond(rec, message) {
     await respond(rec.id, message)
     await refresh()
     emit('changed')
-  }
-  catch (error) {
+  } catch (error) {
     $q.notify({ type: 'negative', message: String(error?.message ?? error) })
-  }
-  finally {
+  } finally {
     busyId.value = null
   }
 }
@@ -131,11 +125,9 @@ async function onApprove(rec, ok) {
     await approve(rec.id, ok)
     await refresh()
     emit('changed')
-  }
-  catch (error) {
+  } catch (error) {
     $q.notify({ type: 'negative', message: String(error?.message ?? error) })
-  }
-  finally {
+  } finally {
     busyId.value = null
   }
 }

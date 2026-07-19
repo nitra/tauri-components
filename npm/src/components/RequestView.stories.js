@@ -5,12 +5,31 @@ export default {
   component: RequestView
 }
 
+export const Pending = {
+  args: {
+    result: { status: 'pending' }
+  }
+}
+
 export const Done = {
   args: {
     result: {
       status: 'done',
       summary: 'Task created successfully.',
       actions: [{ tool: 'fs.write', input: { path: '~/projects/mt/task.md' }, envelope: { ok: true } }]
+    }
+  }
+}
+
+export const ActionFailure = {
+  args: {
+    result: {
+      status: 'partial',
+      summary: 'Task created, but one write failed.',
+      actions: [
+        { tool: 'fs.write', input: { path: '~/projects/mt/task.md' }, envelope: { ok: true } },
+        { tool: 'fs.write', input: { path: '~/projects/mt/notes.md' }, envelope: { ok: false } }
+      ]
     }
   }
 }

@@ -1,11 +1,11 @@
 ---
+type: Vue Component
+title: DialogActions.vue
+resource: npm/src/components/DialogActions.vue
 docgen:
-  source: npm/src/components/DialogActions.vue
-  crc: 7126e317
+  crc: bccdf0c8
   model: omlx/gemma-4-e4b-it-OptiQ-4bit
 ---
-
-# DialogActions.vue
 
 Компонент надає стандартний нижній колонтитул для діалогових вікон, що містить кнопку скасування та основну кнопку дії. Він забезпечує канонічний патерн "скасувати + відправити" для діалогів.
 

@@ -1,9 +1,10 @@
 //! `tauri-plugin-agent` — the Rust half of `@7n/tauri-components`.
 //!
-//! Registers the per-app request journal (`journal_*`) and `omlx_config`
-//! commands so every consumer app shares one implementation. Commands are
-//! invoked from the webview as `plugin:agent|<command>` (the JS package's
-//! `createTauriJournalStore` / `useOmlx` use exactly those names).
+//! Registers the per-app request journal (`journal_*`) commands, the ACP
+//! client commands, and the domain MCP bridge, so every consumer app shares
+//! one implementation. Commands are invoked from the webview as
+//! `plugin:agent|<command>` (the JS package's `createTauriJournalStore` /
+//! `useAcpAgent` use exactly those names).
 //!
 //! Register in an app's builder:
 //! ```ignore
@@ -22,10 +23,10 @@ mod commands;
 mod journal;
 mod mcp_bridge;
 
-/// Initialize the agent plugin: journal + omlx commands, the ACP client
-/// commands (spawning/prompting/cancelling an external coding agent and
-/// resolving its permission requests), and the domain MCP bridge (exposes the
-/// app's tool catalog to whichever ACP agent is spawned).
+/// Initialize the agent plugin: journal commands, the ACP client commands
+/// (spawning/prompting/cancelling an external coding agent and resolving its
+/// permission requests), and the domain MCP bridge (exposes the app's tool
+/// catalog to whichever ACP agent is spawned).
 pub fn init<R: Runtime>() -> TauriPlugin<R> {
     Builder::new("agent")
         .invoke_handler(tauri::generate_handler![
@@ -33,7 +34,6 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
             commands::journal_load,
             commands::journal_update,
             commands::journal_list,
-            commands::omlx_config,
             acp::acp_spawn_agent,
             acp::acp_prompt,
             acp::acp_cancel,

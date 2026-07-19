@@ -1,13 +1,13 @@
 ---
+type: JS Module
+title: quasar.js
+resource: npm/src/testing/quasar.js
 docgen:
-  source: npm/src/testing/quasar.js
-  crc: 154223d8
+  crc: c0a38d66
   model: omlx/gemma-4-e4b-it-OptiQ-4bit
   score: 100
   judgeModel: openai-codex/gpt-5.4-mini
 ---
-
-# quasar.js
 
 ## Огляд
 

@@ -1,11 +1,16 @@
 {
   "gitignore": true,
   "exitCode": 1,
-  "reporters": ["console"],
+  "reporters": [
+    "console"
+  ],
   "minLines": 25,
   "ignore": [
     "**/*.md",
     "npm/types/**",
-    "**/target/**"
+    "**/target/**",
+    ".claude/worktrees/**",
+    "**/dist/**",
+    "**/CHANGELOG.md"
   ]
 }

@@ -727,6 +727,426 @@
       "confidence": 0,
       "reason": "LLM-classification unavailable, conservative fallback (treat as worth-testing)",
       "classifiedAt": "2026-07-17T17:28:42.726Z"
+    },
+    "b0a7bb7008dc49bde48feef8ddded1f04ae9e6ed:22:42:IiI": {
+      "verdict": "equivalent",
+      "confidence": 0.95,
+      "reason": "The mutation changes the constant `AGENT_ACTOR`'s `id` from the string literal 'acp' to an empty string `\"\"`. Since this constant is used only once in the provided context to define an actor object structure, and without seeing the consumers of this object, it's highly likely that the system either doesn't check the exact string value 'acp' or treats an empty ID similarly (or the change has no observable effect on the core logic visible here).",
+      "suggestedTest": "",
+      "classifiedAt": "2026-07-19T19:00:31.795Z"
+    },
+    "b0a7bb7008dc49bde48feef8ddded1f04ae9e6ed:23:21:L1w_XHMqLw": {
+      "verdict": "worth-testing",
+      "confidence": 0.98,
+      "reason": "`isQuestion()` relies on `QUESTION_RE.test(text.trim())`; changing `/\\?\\s*$/` to `/\\?\\s*/` makes any string containing `?` anywhere match, not just question-ending text. This affects input flow directly and can misclassify commands like `what? no` after trim.",
+      "suggestedTest": "Add unit tests for `isQuestion()` covering trailing-question cases and non-ending հարց: `\"hello?\" -> true`, `\"what? no\" -> false`, plus trimmed whitespace handling.",
+      "classifiedAt": "2026-07-19T19:00:47.764Z"
+    },
+    "b0a7bb7008dc49bde48feef8ddded1f04ae9e6ed:23:21:L1w_XFMqJC8": {
+      "verdict": "worth-testing",
+      "confidence": 0.97,
+      "reason": "`isQuestion(text)` trims input then applies `QUESTION_RE`. Changing `\\?\\s*$` to `\\?\\S*$` makes strings like `\"what? \"` stop matching after `trim()` only if there is non-space trailing text; that is a real branch in question detection used by `acp-kit.js`. The mutant can alter approval-routing behavior for texts ending with `?` plus suffix chars.",
+      "suggestedTest": "Unit-test `isQuestion` with cases like `'hello?'`, `'hello?   '`, and `'hello?x'` to assert only a terminal question mark (after trim) returns true.",
+      "classifiedAt": "2026-07-19T19:00:59.170Z"
+    },
+    "b0a7bb7008dc49bde48feef8ddded1f04ae9e6ed:30:10:dHJ1ZQ": {
+      "verdict": "defensive",
+      "confidence": 0.95,
+      "reason": "The original condition `typeof text === 'string'` defensively guards against non-string inputs to `isQuestion`. Mutating it to `true` would bypass this runtime type check, assuming text is always a string.",
+      "suggestedTest": "Add a test case passing `null` or `undefined` to `isQuestion` and assert that the function correctly returns `false`.",
+      "classifiedAt": "2026-07-19T19:01:05.134Z"
+    },
+    "b0a7bb7008dc49bde48feef8ddded1f04ae9e6ed:30:55:dGV4dA": {
+      "verdict": "worth-testing",
+      "confidence": 0.95,
+      "reason": "The mutant changed `text.trim()` to `text`. This change affects the logic in `isQuestion` (line 30), specifically how leading/trailing whitespace is handled before testing against `QUESTION_RE`. This suggests a missing test case to check for strings like ' Hello? '.",
+      "suggestedTest": "Write a unit test for isQuestion passing strings with leading or trailing whitespace (e.g., 'test? ') to ensure `trim()` functionality is correctly validated.",
+      "classifiedAt": "2026-07-19T19:01:10.269Z"
+    },
+    "b0a7bb7008dc49bde48feef8ddded1f04ae9e6ed:41:39:ZmFsc2U": {
+      "verdict": "worth-testing",
+      "confidence": 0.95,
+      "reason": "The mutation changes a specific condition (`turn.stopped === 'refusal'`) to a constant `false`, affecting how the 'status' is determined for a turn. This logic path must be explicitly tested to ensure 'refusal' leads to 'partial' status.",
+      "suggestedTest": "Write a unit test providing a `turn` object where `turn.stopped` is exactly `'refusal'` and assert that `finalizeTurn` returns an object with `status: 'partial'`.",
+      "classifiedAt": "2026-07-19T19:01:15.415Z"
+    },
+    "b0a7bb7008dc49bde48feef8ddded1f04ae9e6ed:41:56:IiI": {
+      "verdict": "worth-testing",
+      "confidence": 1,
+      "reason": "Mutating 'refusal' to '' on line 41 changes the logic from setting status to 'partial' when the turn explicitly stopped due to refusal, to potentially falling through the if condition, which alters the observable outcome.",
+      "suggestedTest": "Write a unit test that calls finalizeTurn with a mock 'turn' object where turn.stopped is strictly 'refusal' and asserts that the returned status is 'partial'.",
+      "classifiedAt": "2026-07-19T19:01:20.295Z"
+    },
+    "b0a7bb7008dc49bde48feef8ddded1f04ae9e6ed:42:12:ZmFsc2U": {
+      "verdict": "worth-testing",
+      "confidence": 0.95,
+      "reason": "The mutant changes `urn.stopped === 'cancelled'` to `false` on line 42. This alters the logic flow: if the turn stopped specifically due to 'cancelled', the status is incorrectly set to 'done' instead of 'partial'. A unit test must assert the status when `turn.stopped` is 'cancelled'.",
+      "suggestedTest": "Write a unit test case for `finalizeTurn` where `turn.stopped` is set to 'cancelled' and assert that the returned status is 'partial'.",
+      "classifiedAt": "2026-07-19T19:01:26.021Z"
+    },
+    "b0a7bb7008dc49bde48feef8ddded1f04ae9e6ed:42:29:IiI": {
+      "verdict": "worth-testing",
+      "confidence": 0.95,
+      "reason": "Mutating `turn.stopped === 'cancelled')` to `\"\"` changes the status assignment logic. If `turn.stopped` is 'cancelled', the original code sets status to 'partial' (line 42), but the mutant would fall through to the next condition or default, potentially affecting the return status.",
+      "suggestedTest": "Write a unit test calling finalizeTurn with a turn object where turn.stopped is 'cancelled' and assert that the returned status is 'partial'.",
+      "classifiedAt": "2026-07-19T19:01:31.382Z"
+    },
+    "b0a7bb7008dc49bde48feef8ddded1f04ae9e6ed:77:9:ZmFsc2U": {
+      "verdict": "defensive",
+      "confidence": 1,
+      "reason": "The condition `!dispatch` guards against a scenario where the necessary dispatch mechanism is not initialized or provided, which is an impossible state if the component is supposed to be fully configured.",
+      "suggestedTest": "",
+      "classifiedAt": "2026-07-19T19:01:34.610Z"
+    },
+    "b0a7bb7008dc49bde48feef8ddded1f04ae9e6ed:93:11:dHJ1ZQ": {
+      "verdict": "worth-testing",
+      "confidence": 0.95,
+      "reason": "Mutating `activeRequestId` to `true` removes the conditional check at line 93. This bypasses the logic of only updating the journal when an active request ID is present, which implies we need a test case where this ID is explicitly null/undefined.",
+      "suggestedTest": "Write a unit test that sets up a scenario where `decision` is 'approval' but `activeRequestId` is falsy (null or undefined) to ensure line 94 is correctly skipped.",
+      "classifiedAt": "2026-07-19T19:01:39.734Z"
+    },
+    "b0a7bb7008dc49bde48feef8ddded1f04ae9e6ed:112:9:ZmFsc2U": {
+      "verdict": "worth-testing",
+      "confidence": 0.95,
+      "reason": "The mutant changes the condition from checking if `activeRequestId` is truthy to always checking `false` at line 112. This bypasses the core logic of updating the journal status when a permission request arrives. A test should confirm that if a request arrives and `activeRequestId` is present, the journal is updated correctly.",
+      "suggestedTest": "Write a unit test that mocks the journal dependency and provides a payload where activeRequestId is defined. Assert that journal.update is called exactly once with the correct status ('needs_approval') and the payload data.",
+      "classifiedAt": "2026-07-19T19:01:45.322Z"
+    },
+    "b0a7bb7008dc49bde48feef8ddded1f04ae9e6ed:148:21:W10": {
+      "verdict": "worth-testing",
+      "confidence": 0.95,
+      "reason": "The mutation replaces [...baseActions, ...turn.trace] with [], completely removing any actions traced in the turn. This logic controls what actions are ultimately journaled and returned, indicating a missing assertion or test case for scenarios where turn.trace is non-empty.",
+      "suggestedTest": "Write a unit test where turnPromise resolves with a turn containing non-empty 'trace' array. Assert that the resulting 'actions' array in the return value includes all elements from 'baseActions' AND all elements from 'turn.trace'.",
+      "classifiedAt": "2026-07-19T19:01:50.753Z"
+    },
+    "b0a7bb7008dc49bde48feef8ddded1f04ae9e6ed:122:9:ZmFsc2U": {
+      "verdict": "defensive",
+      "confidence": 0.95,
+      "reason": "The original check `if (listening) return` prevents re-initialization of listeners (`deps.onAcpToolCall`, `deps.onAcpPermissionRequest`) if `ensureListening` is called multiple times, guarding against race conditions or redundant setup.",
+      "suggestedTest": "No specific suggestion needed; this is a standard defensive initialization pattern.",
+      "classifiedAt": "2026-07-19T19:01:54.969Z"
+    },
+    "b0a7bb7008dc49bde48feef8ddded1f04ae9e6ed:123:17:ZmFsc2U": {
+      "verdict": "defensive",
+      "confidence": 0.95,
+      "reason": "The boolean assignment `listening = true` (line 123) immediately after checking `if (listening) return` ensures that the setup logic (`await deps.onAcpToolCall`, etc.) runs exactly once per instance. If the original was 'true' and mutated to 'false', it would incorrectly allow re-initialization, suggesting this check guards against re-running setup logic.",
+      "suggestedTest": "N/A",
+      "classifiedAt": "2026-07-19T19:02:00.463Z"
+    },
+    "b0a7bb7008dc49bde48feef8ddded1f04ae9e6ed:149:37:e30": {
+      "verdict": "equivalent",
+      "confidence": 0.95,
+      "reason": "The mutation replaces a complex object literal structure on line 149 with an empty object {}. Since this object is immediately destructured/merged into `journal.update` call, and the surrounding context does not guarantee that the required keys ({...fields, messages: turn.messages, actions, pendingApproval: null}) are mandatory for the update, the mutation is likely inert or covered by the original successful flow.",
+      "suggestedTest": "",
+      "classifiedAt": "2026-07-19T19:02:05.299Z"
+    },
+    "b0a7bb7008dc49bde48feef8ddded1f04ae9e6ed:163:32:e30": {
+      "verdict": "worth-testing",
+      "confidence": 0.95,
+      "reason": "Mutating the status field from a descriptive string ('running') to an empty object ({}) changes the recorded state of the request in the journal. This logic path is essential for tracking request lifecycle and should be covered by a test verifying the journal update.",
+      "suggestedTest": "Write a unit test that calls `request()` and then asserts that the journal record for the created request has a status property equal to 'running'.",
+      "classifiedAt": "2026-07-19T19:02:10.143Z"
+    },
+    "b0a7bb7008dc49bde48feef8ddded1f04ae9e6ed:162:39:e30": {
+      "verdict": "worth-testing",
+      "confidence": 0.95,
+      "reason": "The original code explicitly passes `{ intent, actor: AGENT_ACTOR }` to `journal.create()`, ensuring both intent and the specific actor are recorded. The mutation to `{}` removes both properties. This tests if the journal relies on these explicit fields for correct record creation, exposing a missing assertion if the resulting journal entry is incomplete.",
+      "suggestedTest": "Write a unit test for `request` that verifies the exact structure of the journal entry created by `journal.create`, asserting that both `intent` and `actor: AGENT_ACTOR` are present in the created record.",
+      "classifiedAt": "2026-07-19T19:02:16.393Z"
+    },
+    "b0a7bb7008dc49bde48feef8ddded1f04ae9e6ed:167:32:e30": {
+      "verdict": "worth-testing",
+      "confidence": 0.95,
+      "reason": "The mutant replaces a structured object containing `agentKind` and `sessionKey` with an empty object `{}` at line 167. This object is then used in `journal.update`, suggesting that the journal record structure is critical for downstream logic, making the omission of session context a viable path for failure.",
+      "suggestedTest": "Write a unit test that mocks `deps.createAcpSession` to return a session object with known `agentKind` and `sessionKey`, and verifies that `journal.update` is called with the correct structure in the `acp` field.",
+      "classifiedAt": "2026-07-19T19:02:22.591Z"
+    },
+    "b0a7bb7008dc49bde48feef8ddded1f04ae9e6ed:163:42:IiI": {
+      "verdict": "worth-testing",
+      "confidence": 0.95,
+      "reason": "The mutation changes the status update from 'running' to an empty string, affecting the state tracked by the 'journal' upon starting a request.",
+      "suggestedTest": "Write a unit test that checks the journal entry status after calling request(), ensuring it is 'running' and not an empty string.",
+      "classifiedAt": "2026-07-19T19:02:26.684Z"
+    },
+    "b0a7bb7008dc49bde48feef8ddded1f04ae9e6ed:168:32:WyJTdHJ5a2VyIHdhcyBoZXJlIl0": {
+      "verdict": "equivalent",
+      "confidence": 0.95,
+      "reason": "The mutation changes the value of the array passed to runAndJournal from an empty array `[]` to an array containing a string `[\"Stryker was here\"]`. Since `runAndJournal` likely processes or ignores this initial payload array, changing it to a non-empty array with a static string will not change the observable output of `request` for any given input intent.",
+      "suggestedTest": "N/A",
+      "classifiedAt": "2026-07-19T19:02:31.608Z"
+    },
+    "b0a7bb7008dc49bde48feef8ddded1f04ae9e6ed:168:52:e30": {
+      "verdict": "worth-testing",
+      "confidence": 0.95,
+      "reason": "Mutating ` { sessionKey: activeSessionKey, text: intent }` to `{}` removes the necessary context (session key and message content) required by `deps.runAcpTurn`. The consumer of this function must validate that both `sessionKey` and `text` are correctly passed to the underlying ACP execution logic.",
+      "suggestedTest": "Write a unit test ensuring that `runAndJournal` calls `deps.runAcpTurn` with the exact structure `{ sessionKey: activeSessionKey, text: intent }` when a request is made, asserting that the subsequent journal update or return value reflects the successful turn completion.",
+      "classifiedAt": "2026-07-19T19:02:38.348Z"
+    },
+    "b0a7bb7008dc49bde48feef8ddded1f04ae9e6ed:231:11:cmVjb3JkLnN0YXR1cyAhPT0gJ25lZWRzX2FwcHJvdmFsJyAmJiAhcGVuZGluZw": {
+      "verdict": "worth-testing",
+      "confidence": 0.95,
+      "reason": "The mutation changes a logical OR to an AND in the condition on line 231: `|| !pending` becomes `&& !pending`. This alters the branching logic, specifically requiring `pending` to be falsy when `record.status` is not 'needs_approval' for the function to proceed differently, exposing a path that likely needs testing.",
+      "suggestedTest": "Write a unit test that covers the case where `record.status` is not 'needs_approval' and `record.pendingApproval` is truthy, ensuring the function does not return early as the original OR condition would allow.",
+      "classifiedAt": "2026-07-19T19:02:44.928Z"
+    },
+    "b0a7bb7008dc49bde48feef8ddded1f04ae9e6ed:231:11:ZmFsc2U": {
+      "verdict": "worth-testing",
+      "confidence": 0.95,
+      "reason": "Changing `ecord.status !== 'needs_approval'` to `false` forces the condition `(record.status !== 'needs_approval' || !pending)` to be false if `!pending` is false. This means the flow skips the return at line 232/233 when it shouldn't if `record.status` was not 'needs_approval', thus hiding a necessary path for non-approval states.",
+      "suggestedTest": "Write a unit test that mocks a record where status is not 'needs_approval' and pendingApproval is present, ensuring the logic proceeds to the next part of the function or handles the 'needs_approval' case correctly.",
+      "classifiedAt": "2026-07-19T19:02:51.839Z"
+    },
+    "b0a7bb7008dc49bde48feef8ddded1f04ae9e6ed:167:39:e30": {
+      "verdict": "equivalent",
+      "confidence": 0.95,
+      "reason": "The mutant replaces an object containing `agentKind` and `sessionKey` with an empty object `{}` on line 167. Since the subsequent call to `runAndJournal` on line 168 uses `activeSessionKey` (set on line 165) and the modification is only inside `journal.update`, and the mutation is effectively ignored by the logic flow relying on `activeSessionKey`, the observable behavior concerning the rest of the function remains the same.",
+      "suggestedTest": "",
+      "classifiedAt": "2026-07-19T19:02:57.444Z"
+    },
+    "b0a7bb7008dc49bde48feef8ddded1f04ae9e6ed:275:19:W10": {
+      "verdict": "worth-testing",
+      "confidence": 0.95,
+      "reason": "The original code spreads `record.actions` (which is assumed to be an array) and then appends a new action object. The mutant replaces this entire spread with `[]`, thus discarding all previously recorded actions. This logic needs a test case verifying that all prior actions are preserved.",
+      "suggestedTest": "Test `approveMcpToolCall` with a `record` where `record.actions` is a non-empty array, and assert that the resulting `actions` array in the journal update contains all original actions plus the new one.",
+      "classifiedAt": "2026-07-19T19:03:03.461Z"
+    },
+    "b0a7bb7008dc49bde48feef8ddded1f04ae9e6ed:275:24:cmVjb3JkLmFjdGlvbnMgJiYgW10": {
+      "verdict": "worth-testing",
+      "confidence": 0.95,
+      "reason": "The original code uses nullish coalescing (`??`) which defaults to an empty array if `record.actions` is null or undefined. The mutation changes this to logical AND (`&&`), which short-circuits and results in `[]` if `record.actions` is falsy (e.g., null, undefined, or an empty array if that caused the short-circuit to behave differently, though here it primarily targets null/undefined). This logic branch needs explicit testing to ensure correct array concatenation.",
+      "suggestedTest": "Test `approveMcpToolCall` with a `record` where `actions` is `null` or `undefined` to verify that the resulting `actions` array is correctly initialized.",
+      "classifiedAt": "2026-07-19T19:03:10.395Z"
+    },
+    "b0a7bb7008dc49bde48feef8ddded1f04ae9e6ed:276:35:e30": {
+      "verdict": "worth-testing",
+      "confidence": 0.95,
+      "reason": "The mutation replaces a structured object literal `{ status: 'running', actions, pendingApproval: null }` with an empty object `{}` on line 276. This change alters the state update sent to `journal.update`, potentially breaking invariants about the required shape of the status update.",
+      "suggestedTest": "Write a unit test for `approveMcpToolCall` that specifically asserts the structure of the arguments passed to `journal.update`, ensuring that the status, actions, and pendingApproval fields are correctly populated based on the function's successful execution path.",
+      "classifiedAt": "2026-07-19T19:03:16.526Z"
+    },
+    "b0a7bb7008dc49bde48feef8ddded1f04ae9e6ed:275:47:e30": {
+      "verdict": "worth-testing",
+      "confidence": 0.85,
+      "reason": "The mutation replaces a fully constructed action object containing `tool`, `input`, and `envelope` with an empty object `{}` in the `actions` array on line 275. This change alters the structure of the data persisted/returned by the function, suggesting that the consumer of this structure (e.g., in persistence or state management) should validate the required fields (`tool`, `input`, `envelope`).",
+      "suggestedTest": "Write a unit test that calls `approveMcpToolCall` and asserts that the updated action object added to `record.actions` retains the correct `tool`, `input`, and `envelope` fields, ensuring the mutation does not result in a structurally empty object.",
+      "classifiedAt": "2026-07-19T19:03:23.271Z"
+    },
+    "b0a7bb7008dc49bde48feef8ddded1f04ae9e6ed:276:45:IiI": {
+      "verdict": "worth-testing",
+      "confidence": 0.95,
+      "reason": "Changing the status string from 'running' to an empty string changes the state reported in the journal update (line 276). This affects how downstream consumers interpret the state, implying a need to test the resulting state propagation.",
+      "suggestedTest": "Write a unit test that invokes approveMcpToolCall and asserts that journal.update is called with { status: 'running', ... }.",
+      "classifiedAt": "2026-07-19T19:03:27.836Z"
+    },
+    "b0a7bb7008dc49bde48feef8ddded1f04ae9e6ed:296:33:IiI": {
+      "verdict": "worth-testing",
+      "confidence": 0.95,
+      "reason": "The mutation changes a literal string `'allow'` to `''` in `wantPrefix` assignment. If `decision` is true, the code will search for an option whose kind starts with an empty string, which matches everything or behaves differently than expected if the original intent was to match 'allow'. This is a logic branch that requires testing.",
+      "suggestedTest": "Test the case where `decision` is true, ensuring `wantPrefix` correctly resolves to 'allow' and the subsequent option finding logic functions as expected.",
+      "classifiedAt": "2026-07-19T19:03:33.269Z"
+    },
+    "b0a7bb7008dc49bde48feef8ddded1f04ae9e6ed:297:45:by5raW5kLnN0YXJ0c1dpdGg": {
+      "verdict": "worth-testing",
+      "confidence": 0.95,
+      "reason": "The mutation replaces optional chaining (`.kind?.startsWith`) with direct access (`.kind.startsWith`). If `pending.options[i].kind` is null or undefined, the original code handles it gracefully, but the mutated code will throw a TypeError. This missing path coverage should be tested.",
+      "suggestedTest": "Write a unit test where `pending.options` exists, but one of the option objects has a `kind` property that is null or undefined.",
+      "classifiedAt": "2026-07-19T19:03:38.722Z"
+    },
+    "b0a7bb7008dc49bde48feef8ddded1f04ae9e6ed:297:18:cGVuZGluZy5vcHRpb25zLmZpbmQ": {
+      "verdict": "defensive",
+      "confidence": 0.91,
+      "reason": "`pending` is typed as `{requestId: string, options: {optionId: string, kind: string}[]}` and this helper only runs after a paused permission request is loaded, so `options` is expected to be present. The optional chain only guards against an absent/invalid payload; in normal flow `pending.options?.find(...)` and `pending.options.find(...)` select the same element.",
+      "suggestedTest": "",
+      "classifiedAt": "2026-07-19T19:03:49.074Z"
+    },
+    "b0a7bb7008dc49bde48feef8ddded1f04ae9e6ed:298:54:b3B0aW9uLm9wdGlvbklk": {
+      "verdict": "worth-testing",
+      "confidence": 0.95,
+      "reason": "The original code uses optional chaining (`option?.optionId`) to safely access `optionId` only if `option` is truthy. The mutation removes this check, potentially throwing a TypeError if `option` is null/undefined. This indicates a missing test case for when the finding logic results in a null/undefined `option`.",
+      "suggestedTest": "Write a unit test that mocks `pending.options` such that `pending.options?.find(...)` returns undefined, asserting that `deps.respondAcpPermission` is called with undefined for the optionId.",
+      "classifiedAt": "2026-07-19T19:03:55.984Z"
+    },
+    "b0a7bb7008dc49bde48feef8ddded1f04ae9e6ed:300:45:IiI": {
+      "verdict": "worth-testing",
+      "confidence": 0.95,
+      "reason": "The mutation replaces a meaningful status string ('running') with an empty string (''). This changes the observable state updated in the journal via `journal.update()`. The system must assert that the correct 'running' status is persisted for this function to be considered correct.",
+      "suggestedTest": "Write a unit test that calls `approveAcpPermission` and asserts that `journal.update` is called with `{ status: 'running', ... }`.",
+      "classifiedAt": "2026-07-19T19:04:01.373Z"
+    },
+    "b0a7bb7008dc49bde48feef8ddded1f04ae9e6ed:300:35:e30": {
+      "verdict": "worth-testing",
+      "confidence": 0.95,
+      "reason": "The mutation replaces a specific object literal `{ status: 'running', pendingApproval: null }` with an empty object `{}`. This means the test must assert that the journal update in line 300 correctly sets `status` to 'running' and `pendingApproval` to `null` on the `journal` dependency, which is not explicitly tested here.",
+      "suggestedTest": "Write a unit test that mocks the `journal` dependency and asserts that `journal.update(requestId, { status: 'running', pendingApproval: null })` is called exactly once with the expected payload when `approveAcpPermission` executes.",
+      "classifiedAt": "2026-07-19T19:04:07.651Z"
+    },
+    "b0a7bb7008dc49bde48feef8ddded1f04ae9e6ed:305:14:cmVjb3JkLmFjdGlvbnMgJiYgW10": {
+      "verdict": "worth-testing",
+      "confidence": 0.95,
+      "reason": "The original code uses nullish coalescing (`??`) to default to an empty array if `record.actions` is null or undefined. The mutation changes this to logical AND (`&&`), meaning if `record.actions` is falsy (e.g., null, undefined, or an empty array, though an empty array is truthy in JS context for `&&` if it's the first operand, this primarily breaks on null/undefined input), it evaluates to `[]`. This logic must be verified when `record.actions` is explicitly null/undefined.",
+      "suggestedTest": "Write a unit test case where the input `record` object has `actions` set to `null` or `undefined` and assert that the returned object contains an empty array for `actions`.",
+      "classifiedAt": "2026-07-19T19:04:15.018Z"
+    },
+    "4fe1bb400beba8bec41238d630af678fd0a23039:19:11:dHJ1ZQ": {
+      "verdict": "worth-testing",
+      "confidence": 0.95,
+      "reason": "The mutation changes `spec.required` check on line 19 to always return an error if `value` is undefined/null, effectively disabling the required field check for the current branch.",
+      "suggestedTest": "Write a unit test that calls `validateInput` with a tool specification where a field is marked as required (`required: true`) and intentionally omit that field from the input object. Verify that the function returns the expected 'Missing required field: [key]' error.",
+      "classifiedAt": "2026-07-19T19:04:20.436Z"
+    },
+    "4fe1bb400beba8bec41238d630af678fd0a23039:18:32:ZmFsc2U": {
+      "verdict": "worth-testing",
+      "confidence": 0.95,
+      "reason": "The mutant changes `value === null` to `false` on line 18, effectively skipping the check for null values when `value` is undefined or null. This skips validation for missing/null fields even if they aren't explicitly marked as required, which suggests a test case where a non-required field is null should yield the correct result (i.e., continue processing or correctly handle the missing value).",
+      "suggestedTest": "Add a test case to `validateInput` where an optional field in the input object is explicitly set to `null`. Verify that if the field is optional, the validation continues correctly.",
+      "classifiedAt": "2026-07-19T19:04:26.660Z"
+    },
+    "4fe1bb400beba8bec41238d630af678fd0a23039:22:9:dHJ1ZQ": {
+      "verdict": "worth-testing",
+      "confidence": 1,
+      "reason": "The mutant changes `pec.type === 'string'` to `true` on line 22. If the original logic was intended to only validate string types when the schema explicitly dictates it, changing it to `true` means this check will always fire for non-null/undefined values that were expected to be strings, potentially leading to incorrect validation failures for other types, or allowing incorrect values to pass if the schema type was something else (e.g., 'number').",
+      "suggestedTest": "Write a unit test for `validateInput` that provides an input where `spec.type` is something other than 'string' (e.g., 'number') and the corresponding `value` is not a string, to ensure the validation correctly skips this check when `spec.type` is not 'string'.",
+      "classifiedAt": "2026-07-19T19:04:34.358Z"
+    },
+    "4fe1bb400beba8bec41238d630af678fd0a23039:23:9:ZmFsc2U": {
+      "verdict": "worth-testing",
+      "confidence": 0.95,
+      "reason": "The mutant changes a condition check for 'object' type validation to `false`. This specifically bypasses the check for complex types when `pec.type` is 'object'. A test case must provide an input where the spec requires an object, but the actual value provided is not an object or is an array, to trigger the original error path.",
+      "suggestedTest": "Test with an input where `spec.type` is 'object' but `data[key]` is a primitive or an array (e.g., `data[key] = [1, 2]` or `data[key] = 1`). Assert that the function returns the specific field validation error message for that key.",
+      "classifiedAt": "2026-07-19T19:04:41.235Z"
+    },
+    "4fe1bb400beba8bec41238d630af678fd0a23039:38:73:YGA": {
+      "verdict": "equivalent",
+      "confidence": 0.95,
+      "reason": "The mutant changes `Unknown tool: ${name}` to an empty string, which is likely a non-sensical mutation for this specific string literal. Since this branch (`if (!tool)`) handles a critical 'tool not found' case, changing the message text without altering control flow or return structure makes the resulting code functionally equivalent under all observable test inputs.",
+      "suggestedTest": "N/A",
+      "classifiedAt": "2026-07-19T19:04:45.746Z"
+    },
+    "4fe1bb400beba8bec41238d630af678fd0a23039:23:23:IiI": {
+      "verdict": "worth-testing",
+      "confidence": 0.95,
+      "reason": "The mutation changes the string literal 'object' to an empty string in the type check for 'object' type (Line 23). This alters the behavior when a field is expected to be an object but the input value is actually an empty string, which is not explicitly ruled out by the current checks.",
+      "suggestedTest": "Add unit tests covering the 'object' type validation path, specifically testing inputs where the value is an empty string or other non-object primitives when 'spec.type' is 'object'.",
+      "classifiedAt": "2026-07-19T19:04:51.265Z"
+    },
+    "4fe1bb400beba8bec41238d630af678fd0a23039:38:29:dHJ1ZQ": {
+      "verdict": "worth-testing",
+      "confidence": 0.95,
+      "reason": "Mutating `if (!tool) return { ok: false, ... }`'s implicit condition to `true` changes the behavior when a tool is not found. This path needs explicit testing to ensure the failure case is correctly handled by the dispatch function.",
+      "suggestedTest": "Write a unit test calling `dispatch` with a `name` that does not exist in the provided `catalog`, asserting that the returned object has `ok: false` and the specific 'not_found' error structure.",
+      "classifiedAt": "2026-07-19T19:04:56.600Z"
+    },
+    "4fe1bb400beba8bec41238d630af678fd0a23039:41:31:dHJ1ZQ": {
+      "verdict": "worth-testing",
+      "confidence": 0.95,
+      "reason": "The mutation changes a boolean condition `invalid` from its actual computed value to `true`. This tests the path taken when input validation fails (line 41). A test must ensure that when `validateInput` returns false (i.e., `!invalid`), the dispatch proceeds correctly to the transport call (line 44).",
+      "suggestedTest": "Write a unit test for `createDispatch` where `validateInput` returns false for a valid tool, ensuring the function returns the correct error structure instead of executing the transport.",
+      "classifiedAt": "2026-07-19T19:05:02.201Z"
+    },
+    "4fe1bb400beba8bec41238d630af678fd0a23039:47:54:ZXJyb3IubWVzc2FnZQ": {
+      "verdict": "worth-testing",
+      "confidence": 0.95,
+      "reason": "The mutation changes optional chaining on `error?.message` to direct access `error.message` on line 47. This tests whether the caught error object (`error`) is guaranteed to be non-null/non-undefined when an exception occurs, or if it could be null/undefined leading to a TypeError if accessing `.message` directly. This missing assertion needs to be tested.",
+      "suggestedTest": "Test a scenario where the `transport` function rejects with an error object that is explicitly `null` or `undefined`.",
+      "classifiedAt": "2026-07-19T19:05:07.600Z"
+    },
+    "4fe1bb400beba8bec41238d630af678fd0a23039:50:11:dHJ1ZQ": {
+      "verdict": "worth-testing",
+      "confidence": 0.95,
+      "reason": "The mutant replaces `error?.kind !== undefined` with `true` on line 50. This bypasses the check, causing the `envelope.kind` to be assigned regardless of whether `error.kind` exists on the caught error object. A test case must be written that asserts behavior when `error.kind` is undefined (e.g., a standard network error).",
+      "suggestedTest": "Write a test case where 'transport' throws an error object that does not have a 'kind' property, ensuring that the returned error envelope does not contain a 'kind' field.",
+      "classifiedAt": "2026-07-19T19:05:14.797Z"
+    },
+    "4fe1bb400beba8bec41238d630af678fd0a23039:50:11:ZXJyb3Iua2luZA": {
+      "verdict": "worth-testing",
+      "confidence": 1,
+      "reason": "Changing 'error?.kind' to 'error.kind' makes the code crash if 'error' is null or undefined in the catch block. A test should verify correct handling of errors that lack a 'kind' property, or when 'error' itself is falsy.",
+      "suggestedTest": "Write a unit test that mocks a scenario where 'error' is null or undefined within the catch block (e.g., catching a null value passed to the promise rejection).",
+      "classifiedAt": "2026-07-19T19:05:21.440Z"
+    },
+    "6b1fa2155af7b76b5daaa338af20b6d04fd3b9f5:13:52:e30": {
+      "verdict": "worth-testing",
+      "confidence": 0.95,
+      "reason": "The mutant replaces a complex object construction for 'properties[key]' with an empty object {}. This removes the logic to conditionally include 'description' in the schema object when present in the input spec.",
+      "suggestedTest": "Test case where an input spec includes a 'description' property for a parameter. Verify that the resulting schema for that property correctly includes both 'type' and 'description' fields, ensuring the mutant fails.",
+      "classifiedAt": "2026-07-19T19:05:27.900Z"
+    },
+    "6b1fa2155af7b76b5daaa338af20b6d04fd3b9f5:14:95:e30": {
+      "verdict": "worth-testing",
+      "confidence": 0.97,
+      "reason": "`toJsonSchema()` builds each parameter schema from `spec.type` (and optional `description`). Replacing `{ type: spec.type }` with `{}` drops the property for every input field, changing the returned JSON Schema and any downstream tool definitions. This is real mapping logic, not boilerplate.",
+      "suggestedTest": "Add a unit test for `toJsonSchema({ foo: { type: 'string', required: true } })` asserting `properties.foo.type === 'string'` and `required` contains `foo`; also cover the description branch.",
+      "classifiedAt": "2026-07-19T19:05:42.057Z"
+    },
+    "6b1fa2155af7b76b5daaa338af20b6d04fd3b9f5:15:9:dHJ1ZQ": {
+      "verdict": "worth-testing",
+      "confidence": 0.95,
+      "reason": "The mutation changes `spec.required` check from reading the specification to always returning true. This bypasses the logic for populating the 'required' array in the resulting JSON Schema object, which is a core function of toJsonSchema.",
+      "suggestedTest": "Write a unit test that passes an input object where some properties have `required: false` and asserts that the resulting JSON Schema's 'required' array only contains keys explicitly marked as required.",
+      "classifiedAt": "2026-07-19T19:05:47.533Z"
+    },
+    "6b1fa2155af7b76b5daaa338af20b6d04fd3b9f5:15:9:ZmFsc2U": {
+      "verdict": "worth-testing",
+      "confidence": 0.95,
+      "reason": "The mutation changes the conditional check for required parameters from `spec.required` to a constant `false` on line 15. This skips adding keys to the 'required' list based on the input specification.",
+      "suggestedTest": "Write a test case that provides an input spec where a parameter is explicitly marked as required, and assert that this parameter appears in the 'required' array of the generated JSON Schema.",
+      "classifiedAt": "2026-07-19T19:05:56.080Z"
+    },
+    "6b1fa2155af7b76b5daaa338af20b6d04fd3b9f5:17:28:e30": {
+      "verdict": "worth-testing",
+      "confidence": 0.94,
+      "reason": "`toJsonSchema()` always returns an object schema built from `input`; replacing the conditional return at line 17 with `{}` drops all `type/properties/required` output. That changes every caller’s JSON Schema shape, so the mutant exposes a missing assertion on the generated manifest object.",
+      "suggestedTest": "Unit test `toJsonSchema({ foo: { type: 'string', required: true } })` returns `{ type: 'object', properties: { foo: { type: 'string' } }, required: ['foo'] }`, and empty input returns `{ type: 'object', properties: {} }`.",
+      "classifiedAt": "2026-07-19T19:06:16.675Z"
+    },
+    "6b1fa2155af7b76b5daaa338af20b6d04fd3b9f5:17:36:IiI": {
+      "verdict": "worth-testing",
+      "confidence": 0.95,
+      "reason": "The mutation changes 'object' to an empty string in the return structure of toJsonSchema, specifically on line 17. This affects the top-level type definition when there are required properties, which should be covered by a test case.",
+      "suggestedTest": "Test toJsonSchema with an input object that results in required.length > 0, asserting the top-level type is 'object' and the structure is correct.",
+      "classifiedAt": "2026-07-19T19:06:26.408Z"
+    },
+    "6b1fa2155af7b76b5daaa338af20b6d04fd3b9f5:17:71:e30": {
+      "verdict": "equivalent",
+      "confidence": 1,
+      "reason": "Mutating `type: 'object', properties }` to `{}` on line 17 does not change the semantic meaning or structure of the returned JSON Schema when `required.length` is true, as the properties object is already populated by the loop before line 17.",
+      "suggestedTest": "",
+      "classifiedAt": "2026-07-19T19:06:37.791Z"
+    },
+    "6b1fa2155af7b76b5daaa338af20b6d04fd3b9f5:12:20:WyJTdHJ5a2VyIHdhcyBoZXJlIl0": {
+      "verdict": "equivalent",
+      "confidence": 0.95,
+      "reason": "The mutation replaces a list initialization `[]` at line 12 with `[\"Stryker was here\"]`. This line is immediately followed by code that iterates over an input object (`input` argument to `toJsonSchema`), meaning the list initialization on line 12 is never used to build the final structure and has no observable effect on the function's return value.",
+      "suggestedTest": "N/A",
+      "classifiedAt": "2026-07-19T19:07:07.863Z"
+    },
+    "6b1fa2155af7b76b5daaa338af20b6d04fd3b9f5:17:79:IiI": {
+      "verdict": "equivalent",
+      "confidence": 0.95,
+      "reason": "The mutation changes the literal 'object' to an empty string in line 17. Since the return type is explicitly documented as `{object}`, replacing 'object' with \"\" will likely cause a JSON Schema validation failure or a runtime error when the schema is consumed, but the function itself, given valid input, will still execute and return a structurally different but logically equivalent shape to what is expected for an empty required array scenario.",
+      "suggestedTest": "N/A",
+      "classifiedAt": "2026-07-19T19:07:14.955Z"
+    },
+    "6b1fa2155af7b76b5daaa338af20b6d04fd3b9f5:10:37:e30": {
+      "verdict": "worth-testing",
+      "confidence": 0.95,
+      "reason": "The mutation replaces the entire logic block with an empty object `{}`. This logic constructs a JSON Schema based on the input structure (properties and required fields). An empty return object will fail to represent any valid schema, thus missing assertions are likely.",
+      "suggestedTest": "Test with a complex input object that dictates both properties and required fields, ensuring the function returns a schema object containing the correct 'properties' and 'required' array.",
+      "classifiedAt": "2026-07-19T19:07:20.621Z"
+    },
+    "6b1fa2155af7b76b5daaa338af20b6d04fd3b9f5:27:10:Y2F0YWxvZw": {
+      "verdict": "worth-testing",
+      "confidence": 0.95,
+      "reason": "The mutation replaces `.filter(tool => allow(tool))` with just `catalog`, effectively removing the filtering logic based on the `allow` predicate. This means the resulting array might contain tools that the caller intended to exclude, leading to incorrect functionality if the caller relies on the filter.",
+      "suggestedTest": "Write a test case that passes a catalog containing both allowed and disallowed tools, and assert that the returned array only contains the allowed tools based on the provided predicate function.",
+      "classifiedAt": "2026-07-19T19:07:26.051Z"
+    },
+    "6b1fa2155af7b76b5daaa338af20b6d04fd3b9f5:30:13:IiI": {
+      "verdict": "worth-testing",
+      "confidence": 0.95,
+      "reason": "Changing the hardcoded string literal 'function' to an empty string \"\" will change the 'type' field in the resulting tool definition object, which is crucial for the OpenAI API consumer. A unit test should verify the output structure and the correct value of the 'type' field for each tool.",
+      "suggestedTest": "Write a unit test that calls `toolManifest` with a mock catalog and asserts that the 'type' property in the returned tool object is exactly 'function'.",
+      "classifiedAt": "2026-07-19T19:07:31.435Z"
     }
   }
 }

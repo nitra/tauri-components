@@ -3,7 +3,7 @@ import { createDispatch, validateInput } from './dispatch.js'
 
 const catalog = [
   { tier: 'read', name: 'ping', summary: 'ping', input: {}, tauri: 'ping_cmd' },
-  { tier: 'read', name: 'echo', summary: 'echo', input: { msg: { type: 'string', required: true } }, tauri: 'echo_cmd' },
+  { tier: 'read', name: 'echo', summary: 'echo', input: { msg: { type: 'string', required: true } }, tauri: 'echo_cmd' }
 ]
 
 describe('createDispatch', () => {
@@ -19,7 +19,9 @@ describe('createDispatch', () => {
   })
 
   it('wraps a thrown error as an io envelope', async () => {
-    const dispatch = createDispatch(catalog, () => { throw new Error('boom') })
+    const dispatch = createDispatch(catalog, () => {
+      throw new Error('boom')
+    })
     expect(await dispatch('ping', {})).toEqual({ ok: false, error: { code: 'io', message: 'boom' } })
   })
 

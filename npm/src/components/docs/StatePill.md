@@ -1,11 +1,11 @@
 ---
+type: Vue Component
+title: StatePill.vue
+resource: npm/src/components/StatePill.vue
 docgen:
-  source: npm/src/components/StatePill.vue
-  crc: ccee8975
+  crc: bc3d53e9
   model: omlx/gemma-4-e4b-it-OptiQ-4bit
 ---
-
-# StatePill.vue
 
 Компонент відображає візуальний маркер стану (pill). Він використовується для індикації статусу в різних частинах застосунку.
 

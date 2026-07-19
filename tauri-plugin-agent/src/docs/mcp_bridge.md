@@ -1,14 +1,14 @@
 ---
+type: Rust Module
+title: mcp_bridge.rs
+resource: tauri-plugin-agent/src/mcp_bridge.rs
 docgen:
-  source: tauri-plugin-agent/src/mcp_bridge.rs
-  crc: 41dc1e89
+  crc: 2f4ef702
   model: omlx/gemma-4-e4b-it-OptiQ-4bit
   score: 100
   issues: judge:inaccurate:0.98
   judgeModel: openai-codex/gpt-5.4-mini
 ---
-
-# mcp_bridge.rs
 
 ## Огляд
 

@@ -1,11 +1,13 @@
 ---
 name: n-taze
 description: >-
-  Оновлення версій модулів проекту з аналізом major-змін і автоматичним
-  рефакторингом несумісного коду
+  Оновлення версій модулів проекту (bun/npm і, якщо є Cargo.toml, Rust-крейти
+  через cargo-edit) з аналізом major-змін і автоматичним рефакторингом
+  несумісного коду
+version: '1.1'
 ---
 
-<!-- n-cursor:worktree:start -->
+<!-- n-rules:worktree:start -->
 > [!IMPORTANT]
 > **Worktree-only skill.** Виконується **виключно** в окремому git-worktree (`.worktrees/<current-branch>-taze/`) і **не** паралелиться — один інстанс за раз.
 
@@ -22,65 +24,39 @@ git branch --show-current
 Якщо `git rev-parse --show-toplevel` показав, що ти **не** в `.worktrees/`, візьми вивід `git branch --show-current` як `<current-branch>` і виконай **literal-команди без shell expansion** (без command substitution, variable expansion чи backticks). Наприклад, якщо поточна гілка `feature/x`:
 
 ```bash
-npx @nitra/cursor worktree add "feature/x-taze" "n-taze: worktree-only skill"
+npx @7n/mt worktree create "feature/x-taze" "n-taze: worktree-only skill"
 cd ".worktrees/feature-x-taze"
 ```
 
 Тобто branch-argument лишає slash як у git-гілці, а шлях для `cd` бере sanitized форму: slash → `-`.
 
-**Крок 0.1 — bootstrap у новому дереві (після `cd`, окремий крок — поза «без-expansion» блоком вище).** Дерево щойно створене й **без** `node_modules`. Спершу постав залежності локально: тоді `npx` бере локальну копію `@nitra/cursor` і гонки з CDN немає взагалі. Retry-обгортка нижче — safety-net на випадок, коли версію щойно опубліковано, але edge-кеш CDN ще її не має: `npm` тоді падає з `ETARGET`/`notarget` **до** запуску бінарника (внутрішній JS-retry у `n-cursor` для цього кейсу марний — бінарник ще не стартував).
+**Крок 0.1 — bootstrap у новому дереві (після `cd`).** Дерево щойно створене й **без** `node_modules`. Постав залежності локально — тоді `npx @7n/rules <cmd>` бере локальну копію без походу в реєстр:
 
 ```bash
-# Локальна копія @nitra/cursor (девзалежність споживача) — npx бере її, без походу в реєстр.
 bun install
-
-# n_cursor_npx <args> — обгортка bootstrap-виклику "npx @nitra/cursor <args>".
-# Ретраїмо ЛИШЕ транзитні помилки реєстру/мережі (CDN ще не пропагував щойно
-# опубліковану версію). Реальний nonzero від CLI (fix повернув ❌, lint-помилка) —
-# віддаємо одразу, без ретраю. Інтервал 30с; дефолт-ліміт 5 хв
-# (env N_CURSOR_NPX_RETRY_MAX_MIN), hard-ceiling 10 хв.
-# Чому 5 хв: CDN-пропагація npm зазвичай < 2 хв, 5 хв — запас; довше → ймовірно
-# реальна проблема (невірна версія / аутейдж), краще віддати помилку, ніж висіти.
-n_cursor_npx() {
-  max_min="${N_CURSOR_NPX_RETRY_MAX_MIN:-5}"
-  case "$max_min" in '' | *[!0-9]*) max_min=5 ;; esac
-  [ "$max_min" -gt 10 ] && max_min=10
-  deadline=$(( $(date +%s) + max_min * 60 ))
-  attempt=1
-  transient='ETARGET|notarget|No matching version|ENOTFOUND|ETIMEDOUT|EAI_AGAIN|ECONNRESET|50[0-9] |502 Bad Gateway|503 Service Unavailable|504 Gateway'
-  while :; do
-    err=$(mktemp)
-    npx @nitra/cursor "$@" 2>"$err"
-    code=$?
-    cat "$err" >&2
-    [ "$code" -eq 0 ] && { rm -f "$err"; return 0; }
-    if grep -Eq "$transient" "$err" && [ "$(date +%s)" -lt "$deadline" ]; then
-      rm -f "$err"
-      echo "n-cursor: очікую пропагації версії по CDN… спроба $attempt, повтор через 30с" >&2
-      attempt=$((attempt + 1))
-      sleep 30
-    else
-      rm -f "$err"
-      return "$code"
-    fi
-  done
-}
 ```
-
-Усі подальші bootstrap-виклики `npx @nitra/cursor <cmd>` у цій сесії роби через `n_cursor_npx <cmd>`. Якщо опинився у свіжому shell без цієї функції — спершу повтори блок вище (`bun install` + визначення `n_cursor_npx`).
-<!-- n-cursor:worktree:end -->
+<!-- n-rules:worktree:end -->
 
 # n-taze — Оновлення версій проекту
 
 ## Мета
 
-Оновити всі модулі проекту до останніх версій, виявити major-оновлення, перевірити сумісність змін з кодом проекту і за потреби зрефакторити несумісні місця.
+Оновити всі модулі проекту (npm/bun-залежності, а за наявності `Cargo.toml` — і Rust-крейти) до останніх версій, виявити major-оновлення, перевірити сумісність змін з кодом проекту і за потреби зрефакторити несумісні місця.
 
 ## Передумови
 
 - Чисте робоче дерево (`git status` без незакомічених змін у `package.json` / `bun.lock` / `node_modules`) — інакше різницю не відрізнити від оновлення.
 - Встановлений `bun` і доступний `bunx`.
 - Запуск з кореня проекту (де лежить `package.json` / `bun.lock`).
+- Якщо в проекті є хоч один `Cargo.toml` (не в `node_modules`/`.worktrees`) — додатково встановлений `cargo-edit` (`cargo install cargo-edit`, дає команду `cargo upgrade`). Без нього major-бампи Rust-залежностей неможливо застосувати детерміновано (голий `cargo update` піднімає лише semver-сумісні версії) — **STOP** і попроси користувача встановити перед продовженням кроку 2 для Rust-гілки.
+
+### 0.2. Детекція Rust-крейтів
+
+```bash
+find . -name Cargo.toml -not -path "*/node_modules/*" -not -path "*/.worktrees/*" -not -path "*/target/*"
+```
+
+Якщо список непорожній — паралельно з npm-гілкою виконуються кроки 1–8 у Rust-варіанті (позначені нижче як «Rust-гілка»). Якщо порожній — Rust-кроки повністю пропускаються.
 
 ## Workflow
 
@@ -95,6 +71,13 @@ cp bun.lock bun.lock.taze-bak
 
 (У monorepo — також усі `*/package.json` воркспейсів. Файли тимчасові, видалити в кінці.)
 
+**Rust-гілка** — для кожного знайденого на кроці 0.2 `Cargo.toml` (включно з кореневим, якщо є):
+
+```bash
+cp Cargo.toml Cargo.toml.taze-bak
+cp Cargo.lock Cargo.lock.taze-bak   # якщо lock-файл спільний на workspace — достатньо одного бекапу в корені
+```
+
 ### 2. Запустити оновлення
 
 ```bash
@@ -106,17 +89,29 @@ bun install
 - `-r` — рекурсивно по всіх воркспейсах.
 - `latest` — піднімати навіть major.
 
+**Rust-гілка:**
+
+```bash
+cargo upgrade --incompatible allow
+cargo update
+```
+
+- `cargo upgrade` (з `cargo-edit`) переписує вимоги версій у кожному `Cargo.toml` workspace-у на останні; `--incompatible allow` явно дозволяє перетинати major-межу (аналог `-r latest` у taze) — без цього флага incompatible-оновлення за замовчуванням ігноруються.
+- `cargo update` після цього синхронізує `Cargo.lock` з новими вимогами.
+
 ### 3. Виявити major-оновлення
 
 > **Не порівнюй `package.json` вручну.** Класифікацію semver несе CLI — детерміновано, по всіх воркспейсах.
 
 ```bash
-n-cursor taze diff
+n-rules taze diff
 ```
 
 Друкує компактний JSON: `{ "major": [{workspace, pkg, from, to}], "minorPatch": <N>, "totalChanged": <N> }`. `major` — список залежностей, у яких змінилась найлівіша ненульова компонента semver (`1.x→2.x`, `0.4.x→0.5.x`, `0.0.3→0.0.4`); саме він іде в кроки 4–6. `minorPatch` — лічба сумісних (для звіту в кроці 8).
 
 Покриває **прямі** залежності з `package.json` (root + воркспейси). Транзитивні major-стрибки (`bun.lock`) — за потреби переглянь окремо; основний ризик breaking-змін — у прямих.
+
+**Rust-гілка** — для `n-rules taze diff` немає cargo-еквівалента, класифікація ручна: для кожного `Cargo.toml.taze-bak` порівняти версію кожної залежності зі свіжим `Cargo.toml` за тим самим правилом (зміна найлівішої ненульової semver-компоненти = major). Швидкий спосіб — `diff Cargo.toml.taze-bak Cargo.toml` по рядках `<name> = "<version>"` і вручну класифікувати кожну зміну.
 
 ### 4. Зібрати breaking changes по кожному major-оновленню
 
@@ -127,6 +122,8 @@ n-cursor taze diff
 3. **Якщо немає кешованої старої версії** — встановити її окремо в тимчасову теку (`mkdir -p /tmp/taze-old && cd /tmp/taze-old && bun add <name>@<old-version>`) і порівняти.
 
 Цікавлять: видалені/перейменовані експорти, змінені сигнатури функцій, змінені типи, змінена поведінка за замовчуванням, видалені CLI-прапорці.
+
+**Rust-гілка** — адресу репозиторію взяти з поля `repository`/`documentation` крейта на `crates.io` (`https://crates.io/crates/<name>`) або з `[package.metadata]`; CHANGELOG зазвичай у `CHANGELOG.md` репозиторію або в GitHub Releases. Якщо немає — `cargo doc` різниця по публічному API (`pub fn`/`pub struct`/`pub trait`) між закешованою старою версією (`~/.cargo/registry/src/*/<name>-<old-version>/`) і новою (`~/.cargo/registry/src/*/<name>-<new-version>/`) через `diff -r src/`.
 
 ### 5. Перевірити сумісність з кодом проекту
 
@@ -141,14 +138,30 @@ rg -n "<імпорт|функція|опція>" --type ts --type js --type vue
 - **сумісно** — проект не використовує зачеплене API → нічого не робити.
 - **несумісно** — використання знайдено → перейти до п. 6.
 
+**Rust-гілка:**
+
+```bash
+rg -n "<use-шлях|функція|макрос>" --type rust
+```
+
+Та сама класифікація сумісно/несумісно.
+
 ### 6. Рефакторинг несумісних місць
 
 Для кожного несумісного місця — застосувати міграцію згідно з changelog модуля (перейменувати імпорт, оновити сигнатуру виклику, замінити видалену опцію еквівалентом тощо). Після правок:
 
 ```bash
-bun run lint
+npx @7n/rules lint
 bun run typecheck   # якщо є
 bun test            # якщо є
+```
+
+**Rust-гілка** — після правок:
+
+```bash
+cargo fmt --all -- --check
+cargo clippy --all-targets --all-features -- -D warnings
+cargo test
 ```
 
 Якщо міграція нетривіальна або неоднозначна — **не вгадувати**, залишити TODO у коді з посиланням на CHANGELOG і винести в підсумковий звіт як ручну дію.
@@ -161,6 +174,14 @@ rm package.json.taze-bak bun.lock.taze-bak
 
 (І решту бекапів воркспейсів, якщо створювались.)
 
+**Rust-гілка:**
+
+```bash
+rm Cargo.toml.taze-bak Cargo.lock.taze-bak
+```
+
+(І бекапи по кожному workspace-члену, якщо створювались окремо.)
+
 ### 8. Звіт користувачу
 
 Коротко в одному повідомленні:
@@ -171,8 +192,11 @@ rm package.json.taze-bak bun.lock.taze-bak
 - **Потребує ручного втручання:** список TODO з причиною (нетривіальна міграція / неоднозначність / падіння тестів).
 - **Стан перевірок:** `lint` / `typecheck` / `test` — pass/fail з номером рядка, де впало.
 
+Якщо на кроці 0.2 знайдені Rust-крейти — додати окрему секцію **Rust-крейти** з тим самим переліком (оновлено / major / зрефакторено / потребує ручного втручання), і в **Стан перевірок** — окремо `cargo fmt` / `cargo clippy` / `cargo test`.
+
 ## Примітка
 
-- Не запускати `bun run lint` паралельно з іншими ESLint-задачами — діє правило з кореневого `CLAUDE.md`.
+- Не запускати `npx @7n/rules lint` паралельно з іншими ESLint-задачами — діє правило з кореневого `CLAUDE.md`.
 - Якщо проект — `npm/` пакет цього репо, після змін у `package.json` / коді треба підняти `version` і додати запис у `CHANGELOG.md` згідно з `npm/CLAUDE.md`.
-- При великій кількості major-оновлень розбити PR по одному модулю на коміт — щоб `git bisect` залишався корисним.
+- При великій кількості major-оновлень розбити PR по одному модулю на коміт — щоб `git bisect` залишався корисним. Це стосується і Rust-крейтів окремо від npm-пакетів.
+- `cargo upgrade --incompatible allow` редагує `Cargo.toml` навіть для залежностей без доступних breaking changes в змінах API — завжди звіряй крок 4 (CHANGELOG) перед тим, як вважати оновлення безпечним, а не лише факт успішної компіляції.

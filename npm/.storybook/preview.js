@@ -1,6 +1,7 @@
 import { setup } from '@storybook/vue3-vite'
 import * as Quasar from 'quasar'
 import 'quasar/dist/quasar.css'
+import symOutlinedIconSet from 'quasar/icon-set/material-symbols-outlined'
 import * as symOutlined from '@quasar/extras/material-symbols-outlined'
 import * as symRounded from '@quasar/extras/material-symbols-rounded'
 import * as symSharp from '@quasar/extras/material-symbols-sharp'
@@ -43,7 +44,15 @@ setup(app => {
     app.component(name, component)
   }
   app.directive('close-popup', Quasar.ClosePopup)
-  app.use(Quasar.Quasar, { plugins: { Notify: Quasar.Notify }, config: { dark: false, iconMapFn } })
+  // Вбудовані іконки Quasar (q-select dropdown arrow, q-input clear, тощо) за
+  // замовчуванням тягнуться з Material Icons — шрифт, що тут ніде не
+  // завантажений (свідомо, без Google Fonts CDN). `iconSet: material-symbols-outlined`
+  // перемикає ці внутрішні імена на `sym_o_*`, які вже проходять через `iconMapFn` вище.
+  app.use(Quasar.Quasar, {
+    plugins: { Notify: Quasar.Notify },
+    iconSet: symOutlinedIconSet,
+    config: { dark: false, iconMapFn }
+  })
 })
 
 /** @type {import('@storybook/vue3-vite').Preview} */

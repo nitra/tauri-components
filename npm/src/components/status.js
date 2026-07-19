@@ -9,7 +9,7 @@ export const STATUS_COLOR = {
   needs_clarification: '#64d2ff',
   needs_approval: '#ff9f0a',
   failed: '#ff453a',
-  rejected: '#8e8e93',
+  rejected: '#8e8e93'
 }
 
 const FALLBACK = '#8e8e93'

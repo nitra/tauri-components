@@ -1,14 +1,14 @@
 ---
+type: JS Module
+title: dispatch.js
+resource: npm/src/core/dispatch.js
 docgen:
-  source: npm/src/core/dispatch.js
-  crc: 57a74200
+  crc: 23a86a4b
   model: omlx/gemma-4-e4b-it-OptiQ-4bit
   score: 100
   issues: judge:inaccurate:0.98
   judgeModel: openai-codex/gpt-5.4-mini
 ---
-
-# dispatch.js
 
 ## Огляд
 

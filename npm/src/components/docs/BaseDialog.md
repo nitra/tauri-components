@@ -1,11 +1,11 @@
 ---
+type: Vue Component
+title: BaseDialog.vue
+resource: npm/src/components/BaseDialog.vue
 docgen:
-  source: npm/src/components/BaseDialog.vue
-  crc: 88aaae5f
+  crc: fd761cd0
   model: omlx/gemma-4-e4b-it-OptiQ-4bit
 ---
-
-# BaseDialog.vue
 
 Компонент надає універсальну структуру для діалогових вікон у застосунку. Він інкапсулює типовий макет діалогу, включаючи заголовок, тіло та кнопки дій.
 

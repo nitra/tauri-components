@@ -1,6 +1,6 @@
 // `@7n/tauri-components/components` — Quasar dialogs for the agent. AgentDialog
-// and AuditDialog take the injected `agent` gateway (from ./vue useAgent) via a
-// prop; the rest are pure props-only building blocks. Requires the host app to
+// and AuditDialog take the injected `agent` gateway (from ./vue useAcpAgent) via
+// a prop; the rest are pure props-only building blocks. Requires the host app to
 // provide vue + quasar (peer deps) and to have Quasar installed.
 
 export { default as AgentDialog } from './AgentDialog.vue'

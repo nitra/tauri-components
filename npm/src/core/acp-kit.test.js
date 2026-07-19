@@ -1,11 +1,24 @@
 import { describe, expect, it } from 'vitest'
+import { setTimeout } from 'node:timers/promises'
 import { createAcpAgentKit } from './acp-kit.js'
 
 // Same catalog shape as agent-kit.test.js (read/write/destructive tiers).
 const catalog = [
   { tier: 'read', name: 'workspaces', summary: 'list workspaces', input: {}, tauri: 'find_ws' },
-  { tier: 'write', name: 'create', summary: 'create a node', input: { name: { type: 'string', required: true } }, tauri: 'create_cmd' },
-  { tier: 'destructive', name: 'remove', summary: 'remove a node', input: { name: { type: 'string', required: true } }, tauri: 'remove_cmd' },
+  {
+    tier: 'write',
+    name: 'create',
+    summary: 'create a node',
+    input: { name: { type: 'string', required: true } },
+    tauri: 'create_cmd'
+  },
+  {
+    tier: 'destructive',
+    name: 'remove',
+    summary: 'remove a node',
+    input: { name: { type: 'string', required: true } },
+    tauri: 'remove_cmd'
+  }
 ]
 
 /** In-memory journal store matching the injected contract (same as agent-kit.test.js). */
@@ -24,7 +37,7 @@ function fakeJournal() {
       store.set(id, { ...store.get(id), ...patch })
       return Promise.resolve()
     },
-    list: () => Promise.resolve([...store.values()]),
+    list: () => Promise.resolve([...store.values()])
   }
 }
 
@@ -46,8 +59,8 @@ function fakeTransport(calls) {
  * exactly how many awaits are in that chain, unlike counting `Promise.resolve()`.
  * @returns {Promise<void>} resolves after the microtask queue is empty
  */
-function flushMicrotasks() {
-  return new Promise(resolve => setTimeout(resolve, 0))
+async function flushMicrotasks() {
+  await setTimeout(0)
 }
 
 /**
@@ -74,7 +87,9 @@ function fakeAcpDeps() {
   function waiterFor(requestId) {
     if (!toolCallWaiters.has(requestId)) {
       let resolve
-      const promise = new Promise((res) => { resolve = res })
+      const promise = new Promise(res => {
+        resolve = res
+      })
       toolCallWaiters.set(requestId, { promise, resolve })
     }
     return toolCallWaiters.get(requestId)
@@ -87,16 +102,22 @@ function fakeAcpDeps() {
     deps: {
       createAcpSession: async agent => ({ sessionKey: 's1', agentKind: agent.agentKind }),
       runAcpTurn: async () => ({ content: '', trace: [], messages: [], stopped: undefined }),
-      onAcpToolCall: async (handler) => { toolCallHandler = handler },
-      onAcpPermissionRequest: async (handler) => { permissionHandler = handler },
+      onAcpToolCall: async handler => {
+        toolCallHandler = handler
+      },
+      onAcpPermissionRequest: async handler => {
+        permissionHandler = handler
+      },
       respondAcpToolCall: async (requestId, envelope) => {
         respondedToolCalls.push({ requestId, envelope })
         waiterFor(requestId).resolve(envelope)
       },
-      respondAcpPermission: async (requestId, optionId) => { respondedPermissions.push({ requestId, optionId }) },
+      respondAcpPermission: async (requestId, optionId) => {
+        respondedPermissions.push({ requestId, optionId })
+      }
     },
     emitToolCall: payload => toolCallHandler(payload),
-    emitPermissionRequest: payload => permissionHandler(payload),
+    emitPermissionRequest: payload => permissionHandler(payload)
   }
 }
 
@@ -113,7 +134,12 @@ describe('createAcpAgentKit', () => {
 
     deps.runAcpTurn = async () => {
       await emitToolCall({ requestId: 'mcp-1', tool: 'create', input: { name: 'x' } })
-      return { content: 'Created x.', trace: [{ tool: 'create', input: { name: 'x' }, envelope: { ok: true, output: 'create:done' } }], messages: [], stopped: undefined }
+      return {
+        content: 'Created x.',
+        trace: [{ tool: 'create', input: { name: 'x' }, envelope: { ok: true, output: 'create:done' } }],
+        messages: [],
+        stopped: undefined
+      }
     }
 
     const res = await kit.request({ intent: 'create x', agent: { agentKind: 'codex' } })
@@ -135,7 +161,12 @@ describe('createAcpAgentKit', () => {
       // Mirrors the real system: the agent's turn stays blocked until the
       // pending tool call is answered — see `waitForToolCallReply` above.
       const envelope = await waitForToolCallReply('mcp-1')
-      return { content: 'Removed old.', trace: [{ tool: 'remove', input: { name: 'old' }, envelope }], messages: [], stopped: undefined }
+      return {
+        content: 'Removed old.',
+        trace: [{ tool: 'remove', input: { name: 'old' }, envelope }],
+        messages: [],
+        stopped: undefined
+      }
     }
 
     const requestPromise = kit.request({ intent: 'remove old', agent: { agentKind: 'codex' } })
@@ -145,7 +176,12 @@ describe('createAcpAgentKit', () => {
 
     const [pendingId] = [...journal.store.keys()]
     expect(journal.store.get(pendingId).status).toBe('needs_approval')
-    expect(journal.store.get(pendingId).pendingApproval).toEqual({ kind: 'mcp', requestId: 'mcp-1', tool: 'remove', input: { name: 'old' } })
+    expect(journal.store.get(pendingId).pendingApproval).toEqual({
+      kind: 'mcp',
+      requestId: 'mcp-1',
+      tool: 'remove',
+      input: { name: 'old' }
+    })
     expect(calls).toEqual([]) // never dispatched while pending
 
     const approveResult = await kit.approve({ requestId: pendingId, approve: true })
@@ -167,7 +203,12 @@ describe('createAcpAgentKit', () => {
     deps.runAcpTurn = async () => {
       await emitToolCall({ requestId: 'mcp-1', tool: 'remove', input: { name: 'old' } })
       const envelope = await waitForToolCallReply('mcp-1')
-      return { content: envelope.ok ? 'Removed.' : 'I could not remove it.', trace: [], messages: [], stopped: undefined }
+      return {
+        content: envelope.ok ? 'Removed.' : 'I could not remove it.',
+        trace: [],
+        messages: [],
+        stopped: undefined
+      }
     }
 
     const requestPromise = kit.request({ intent: 'remove old', agent: { agentKind: 'codex' } })
@@ -178,7 +219,9 @@ describe('createAcpAgentKit', () => {
 
     expect(approveResult.status).toBe('running')
     expect(calls).toEqual([])
-    expect(respondedToolCalls).toEqual([{ requestId: 'mcp-1', envelope: { ok: false, error: { code: 'forbidden', message: 'Rejected by human.' } } }])
+    expect(respondedToolCalls).toEqual([
+      { requestId: 'mcp-1', envelope: { ok: false, error: { code: 'forbidden', message: 'Rejected by human.' } } }
+    ])
 
     const finalResult = await requestPromise
     expect(finalResult.summary).toBe('I could not remove it.')
@@ -189,7 +232,13 @@ describe('createAcpAgentKit', () => {
     const journal = fakeJournal()
     const { deps, emitToolCall, respondedToolCalls } = fakeAcpDeps()
     // actorTiers below default so even 'write' tools are out of reach for the agent.
-    const kit = createAcpAgentKit({ catalog, journal, transport: fakeTransport(calls), actorTiers: { human: 2, agent: 0 }, deps })
+    const kit = createAcpAgentKit({
+      catalog,
+      journal,
+      transport: fakeTransport(calls),
+      actorTiers: { human: 2, agent: 0 },
+      deps
+    })
     deps.runAcpTurn = async () => {
       await emitToolCall({ requestId: 'mcp-1', tool: 'create', input: { name: 'x' } })
       return { content: '', trace: [], messages: [], stopped: undefined }
@@ -198,7 +247,12 @@ describe('createAcpAgentKit', () => {
     await kit.request({ intent: 'create x', agent: { agentKind: 'codex' } })
 
     expect(calls).toEqual([])
-    expect(respondedToolCalls).toEqual([{ requestId: 'mcp-1', envelope: { ok: false, error: { code: 'forbidden', message: 'Tool "create" is not allowed.' } } }])
+    expect(respondedToolCalls).toEqual([
+      {
+        requestId: 'mcp-1',
+        envelope: { ok: false, error: { code: 'forbidden', message: 'Tool "create" is not allowed.' } }
+      }
+    ])
   })
 
   it('mirrors a native ACP permission request into the same pendingApproval shape and resolves the allow option', async () => {
@@ -208,12 +262,18 @@ describe('createAcpAgentKit', () => {
 
     const permissionOptions = [
       { optionId: 'opt-allow', name: 'Allow', kind: 'allow_once' },
-      { optionId: 'opt-reject', name: 'Reject', kind: 'reject_once' },
+      { optionId: 'opt-reject', name: 'Reject', kind: 'reject_once' }
     ]
     let requestPromiseResolveGate
     deps.runAcpTurn = async () => {
-      await emitPermissionRequest({ requestId: 'perm-1', toolCall: { title: 'Edit file.txt' }, options: permissionOptions })
-      await new Promise((resolve) => { requestPromiseResolveGate = resolve })
+      await emitPermissionRequest({
+        requestId: 'perm-1',
+        toolCall: { title: 'Edit file.txt' },
+        options: permissionOptions
+      })
+      await new Promise(resolve => {
+        requestPromiseResolveGate = resolve
+      })
       return { content: 'Edited.', trace: [], messages: [], stopped: undefined }
     }
 
@@ -243,10 +303,12 @@ describe('createAcpAgentKit', () => {
         toolCall: { title: 'Run rm -rf' },
         options: [
           { optionId: 'opt-allow', name: 'Allow', kind: 'allow_once' },
-          { optionId: 'opt-reject', name: 'Reject', kind: 'reject_once' },
-        ],
+          { optionId: 'opt-reject', name: 'Reject', kind: 'reject_once' }
+        ]
       })
-      await new Promise((resolve) => { releaseTurn = resolve })
+      await new Promise(resolve => {
+        releaseTurn = resolve
+      })
       return { content: 'Skipped that.', trace: [], messages: [], stopped: undefined }
     }
 

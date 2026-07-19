@@ -3,33 +3,26 @@
     @update:model-value="val => emit('update:modelValue', val)"
     @show="onShow"
     :model-value="modelValue"
-    title="Agent (local LLM)"
+    title="Agent"
     icon="sym_o_smart_toy"
     :width="560"
-    body-class="q-gutter-sm"
-  >
+    body-class="q-gutter-sm">
     <template #header>
-      <q-btn @click="showConfig = !showConfig" icon="sym_o_tune" flat round dense size="sm" title="omlx config" />
+      <q-btn @click="showConfig = !showConfig" icon="sym_o_tune" flat round dense size="sm" title="agent config" />
     </template>
 
     <template v-if="showConfig">
-      <q-input v-model="baseUrl" dense outlined label="omlx base URL" />
+      <q-select v-model="agentKind" :options="availableAgentKinds" dense outlined label="agent" />
       <q-select
-        v-model="model"
-        :options="models"
-        :loading="modelsLoading"
-        use-input
-        fill-input
-        hide-selected
-        input-debounce="0"
-        new-value-mode="add-unique"
+        v-model="modelTier"
+        :options="availableTiers"
+        option-value="id"
+        option-label="label"
+        emit-value
+        map-options
         dense
         outlined
-        label="model"
-        hint="завантажені моделі omlx; можна вписати свою"
-        @filter="(_, update) => update()"
-      />
-      <q-input v-model="apiKey" dense outlined label="API key" type="password" />
+        label="tier" />
       <q-separator class="q-my-sm" />
     </template>
 
@@ -38,9 +31,7 @@
         <div v-if="turn.role === 'user'" class="chat-user">{{ turn.text }}</div>
         <RequestView v-else :result="turn.result" />
       </template>
-      <div v-if="running" class="chat-thinking">
-        <q-spinner-dots size="18px" /> думаю…
-      </div>
+      <div v-if="running" class="chat-thinking"><q-spinner-dots size="18px" /> думаю…</div>
     </div>
 
     <q-input
@@ -52,8 +43,7 @@
       type="textarea"
       autogrow
       :label="inputLabel"
-      :hint="promptHint"
-    />
+      :hint="promptHint" />
 
     <!-- jscpd:ignore-start — formal footer markup; jscpd html-mode aligns its
          attribute tokens with an unrelated import block (no shared logic) -->
@@ -64,8 +54,7 @@
         :submit-label="sendLabel"
         icon="sym_o_play_arrow"
         :disable="sendDisabled"
-        :loading="running"
-      />
+        :loading="running" />
     </template>
     <!-- jscpd:ignore-end -->
   </BaseDialog>
@@ -78,17 +67,17 @@ import BaseDialog from './BaseDialog.vue'
 import DialogActions from './DialogActions.vue'
 import RequestView from './RequestView.vue'
 
-// The agent gateway is injected by the host app (`useAgent({ catalog, … })` from
-// @7n/tauri-components/vue), so this dialog stays domain-free and testable.
+// The agent gateway is injected by the host app (`useAcpAgent({ catalog, … })`
+// from @7n/tauri-components/vue), so this dialog stays domain-free and testable.
 const props = defineProps({
   modelValue: { type: Boolean, default: false },
   agent: { type: Object, required: true },
-  promptHint: { type: String, default: 'наприклад: Create a task named deploy in /Users/.../mt, agent mode' },
+  promptHint: { type: String, default: 'наприклад: Create a task named deploy in /Users/.../mt, agent mode' }
 })
 const emit = defineEmits(['update:modelValue', 'ran'])
 
 const $q = useQuasar()
-const { baseUrl, model, apiKey, saveOmlx, loadOmlxEnv, listModels, request, respond } = props.agent
+const { agentKind, modelTier, availableAgentKinds, availableTiers, loadEnv, request, respond } = props.agent
 
 const prompt = ref('')
 const running = ref(false)
@@ -96,8 +85,6 @@ const turns = ref([])
 const requestId = ref(null)
 const logEl = ref(null)
 const showConfig = ref(false)
-const models = ref([])
-const modelsLoading = ref(false)
 
 // Labels shift once a conversation is under way (fresh request → follow-up).
 const inputLabel = computed(() => (turns.value.length ? 'Повідомлення' : 'Prompt'))
@@ -105,23 +92,13 @@ const sendLabel = computed(() => (turns.value.length ? 'Надіслати' : '�
 const sendDisabled = computed(() => running.value || !prompt.value.trim())
 
 /**
- * Pull omlx config from the user's global settings; reset the conversation.
+ * Resolve the per-machine default agent + start the domain MCP bridge; reset the conversation.
  */
 async function onShow() {
   prompt.value = ''
   turns.value = []
   requestId.value = null
-  await loadOmlxEnv()
-  // Populate the model dropdown from the omlx server (best-effort; stays editable).
-  if (listModels) {
-    modelsLoading.value = true
-    try {
-      models.value = await listModels()
-    }
-    finally {
-      modelsLoading.value = false
-    }
-  }
+  await loadEnv()
 }
 
 /**
@@ -154,12 +131,10 @@ async function send() {
   scrollToEnd()
   running.value = true
   try {
-    saveOmlx()
     apply(await (requestId.value ? respond(requestId.value, text) : request(text)))
   } catch (error) {
     $q.notify({ type: 'negative', message: String(error?.message ?? error) })
-  }
-  finally {
+  } finally {
     running.value = false
   }
 }

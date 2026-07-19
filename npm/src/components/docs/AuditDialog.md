@@ -1,11 +1,11 @@
 ---
+type: Vue Component
+title: AuditDialog.vue
+resource: npm/src/components/AuditDialog.vue
 docgen:
-  source: npm/src/components/AuditDialog.vue
-  crc: 963a61d8
+  crc: 8c440daf
   model: omlx/gemma-4-e4b-it-OptiQ-4bit
 ---
-
-# AuditDialog.vue
 
 Компонент відображає журнал аудиту, наданий зовнішнім агентом. Він дозволяє переглядати записи, розширювати їх для детального огляду та взаємодіяти з ними (наприклад, відповідати або затверджувати).
 

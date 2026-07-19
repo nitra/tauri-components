@@ -1,5 +1,35 @@
 # Changelog
 
+## [0.11.2] - 2026-07-19
+
+### Changed
+
+- feat(storybook): Vue Storybook setup for npm components (#5)
+
+## [0.11.1] - 2026-07-18
+
+### Changed
+
+- rules
+
+## [0.11.0] - 2026-07-17
+
+### Removed
+
+- useAgent()/createAgentKit (omlx/runAgent chat-completion шлях) видалено — `useAcpAgent()`/`createAcpAgentKit` (ACP: спавн codex/claude/cursor/pi) тепер єдиний агентний шлях. Разом з ним прибрано `core/llm.js`, `core/agent-handler.js`, `core/omlx-models.js`, `core/resolve-omlx-base-url.js`, `vue/use-omlx.js` та Rust-команду `omlx_config` (tauri-plugin-agent)
+
+## [0.10.1] - 2026-07-16
+
+### Changed
+
+- chore(lint): дозаповнено cspell-словник, авто-fix markdownlint у docs/
+
+## [0.10.0] - 2026-07-16
+
+### Added
+
+- core/acp-agent-presets.js — CODEX_ACP_AGENT_PRESET: спільний для всіх застосунків-споживачів пресет запуску codex через ACP (npx @agentclientprotocol/codex-acp — гола назва "codex-acp" не опублікована), MIN/AVG/MAX тіри за схемою назв релізів codex (gpt-5.6-luna/terra/sol) через CODEX_CONFIG. Експортовано з npm/src/index.js.
+
 ## [0.9.0] - 2026-07-15
 
 ### Added

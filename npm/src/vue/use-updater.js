@@ -45,14 +45,13 @@ export function useUpdater() {
         message: `Версія ${update.version} готова. Встановити зараз?`,
         cancel: { label: 'Пізніше', flat: true },
         ok: { label: 'Встановити', color: 'primary' },
-        persistent: true,
+        persistent: true
       })
         .onOk(() => installAndRelaunch(update))
         .onCancel(() => {
           busy = false
         })
-    }
-    catch (error) {
+    } catch (error) {
       // No network, or the updater isn't configured/permitted — don't bother
       // the user, but leave a trace for diagnosis.
       console.error('[updater] check failed:', error)
@@ -94,10 +93,9 @@ export function useUpdater() {
         message: `Перезапустити зараз, щоб перейти на версію ${update.version}?`,
         cancel: { label: 'Пізніше', flat: true },
         ok: { label: 'Перезапустити', color: 'primary' },
-        persistent: true,
+        persistent: true
       }).onOk(() => relaunch())
-    }
-    catch (error) {
+    } catch (error) {
       dismiss()
       busy = false
       console.error('[updater] install failed:', error)

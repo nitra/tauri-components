@@ -24,14 +24,16 @@ export function toJsonSchema(input) {
  * @returns {object[]} OpenAI `tools` array
  */
 export function toolManifest(catalog, allow = () => true) {
-  return catalog.filter(tool => allow(tool)).map(tool => ({
-    type: 'function',
-    function: {
-      name: tool.name,
-      description: tool.summary,
-      parameters: toJsonSchema(tool.input),
-    },
-  }))
+  return catalog
+    .filter(tool => allow(tool))
+    .map(tool => ({
+      type: 'function',
+      function: {
+        name: tool.name,
+        description: tool.summary,
+        parameters: toJsonSchema(tool.input)
+      }
+    }))
 }
 
 /**

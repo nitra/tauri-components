@@ -9,10 +9,14 @@ one implementation instead of copying them into each `src-tauri/lib.rs`:
   directory is resolved from the app's own local-data dir, so each app keeps an
   isolated journal with no hardcoded bundle id (override with
   `AGENT_REQUESTS_DIR`).
-- `omlx_config` — reads `base_url` + `api_key` from `~/.omlx/settings.json`.
+- ACP client commands (`acp_spawn_agent`, `acp_prompt`, `acp_cancel`,
+  `acp_respond_permission`, `acp_config`) and the domain MCP bridge
+  (`acp_register_catalog`, `acp_mcp_tool_result`, `acp_start_mcp_bridge`) —
+  spawn/drive an external coding agent (codex/claude/cursor/pi) and expose the
+  app's tool catalog to it.
 
 Commands are invoked from the webview as `plugin:agent|<command>`, which is
-exactly what the JS package's `createTauriJournalStore` and `useOmlx` call.
+exactly what the JS package's `createTauriJournalStore` and `useAcpAgent` call.
 
 ## Use it in an app
 
@@ -39,11 +43,12 @@ Capability file (e.g. `src-tauri/capabilities/default.json`):
 }
 ```
 
-`agent:default` grants all five commands. Grant individual `agent:allow-<command>`
-permissions instead if an app needs a narrower surface.
+`agent:default` grants the four journal commands. Grant individual
+`agent:allow-<command>` permissions instead if an app needs a narrower surface.
 
 ## Scope
 
-Only journal + omlx live here — they are identical across apps. Domain tools
-(scanning a task tree, sending mail, …) stay in each app's `src-tauri`, declared
-in the app's JS tool catalog and dispatched via `tauriTransport`.
+Only journal + ACP client + domain MCP bridge live here — they are identical
+across apps. Domain tools (scanning a task tree, sending mail, …) stay in each
+app's `src-tauri`, declared in the app's JS tool catalog and dispatched via
+`tauriTransport`.

@@ -1,0 +1,12 @@
+{
+  "recommendations": [
+    "github.vscode-github-actions",
+    "dbaeumer.vscode-eslint",
+    "oxc.oxc-vscode",
+    "rust-lang.rust-analyzer",
+    "tamasfe.even-better-toml",
+    "stylelint.vscode-stylelint",
+    "DavidAnson.vscode-markdownlint",
+    "timonwong.shellcheck"
+  ]
+}

@@ -1,14 +1,14 @@
 ---
+type: Rust Module
+title: mod.rs
+resource: tauri-plugin-agent/src/acp/mod.rs
 docgen:
-  source: tauri-plugin-agent/src/acp/mod.rs
-  crc: 5a9bb869
+  crc: 051b99b3
   model: omlx/gemma-4-e4b-it-OptiQ-4bit
   score: 100
   issues: judge:inaccurate:0.98
   judgeModel: openai-codex/gpt-5.4-mini
 ---
-
-# mod.rs
 
 ## Огляд
 

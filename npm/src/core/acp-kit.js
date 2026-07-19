@@ -3,17 +3,15 @@ import { createDispatch } from './dispatch.js'
 import { classify, DEFAULT_ACTOR_TIERS } from './scope.js'
 
 // createAcpAgentKit binds an app's catalog + journal to the ACP execution
-// engine — the ACP-flavored sibling of createAgentKit (agent-kit.js), added
-// alongside it so existing consumers keep working on the old omlx/runAgent
-// path while migrating at their own pace (see SPEC / plan for the sequencing).
+// engine — the sole agent kit (the earlier omlx/runAgent-based createAgentKit
+// has been removed; see CHANGELOG).
 //
-// The two engines differ in where tool dispatch happens: runAgent() drove its
-// own tool-calling loop and dispatched synchronously inside handleRequest.
-// Here the ACP agent process drives its OWN loop and calls domain tools
-// through the Rust-side MCP bridge — so dispatch is triggered by a STANDING
-// listener on `acp://mcp-tool-call`, not by anything in request()/respond().
-// Every such call is tier-classified as an `{kind:'agent'}` actor, since by
-// construction only an autonomous agent process can reach the bridge.
+// The ACP agent process drives its OWN tool-calling loop and calls domain
+// tools through the Rust-side MCP bridge — so dispatch is triggered by a
+// STANDING listener on `acp://mcp-tool-call`, not by anything in
+// request()/respond(). Every such call is tier-classified as an
+// `{kind:'agent'}` actor, since by construction only an autonomous agent
+// process can reach the bridge.
 //
 // Scope: one active session/request at a time, matching how AgentDialog is
 // actually used today (a single live conversation). A tool call or permission
@@ -43,7 +41,7 @@ function finalizeTurn(turn) {
   if (turn.stopped === 'max_steps' || turn.stopped === 'refusal') status = 'partial'
   else if (turn.stopped === 'cancelled') status = 'partial'
   else if (question) status = 'needs_clarification'
-  return { status, summary: question ? null : (turn.content || null), question }
+  return { status, summary: question ? null : turn.content || null, question }
 }
 
 /**
@@ -53,9 +51,15 @@ function finalizeTurn(turn) {
  * @param {(tool: object, input: object) => unknown} [config.transport] backend runner for domain tools; omit for a chat-only kit (no domain MCP tools)
  * @param {Record<string, number>} [config.actorTiers] max executable tier rank per actor kind
  * @param {object} [config.deps] injectable `acp-agent.js` functions (tests only — defaults to the real module)
- * @returns {{request: Function, respond: Function, approve: Function}} bound kit
+ * @returns {{request: (opts: {intent: string, agent: object}) => Promise<object>, respond: (opts: {requestId: string, message: string}) => Promise<object>, approve: (opts: {requestId: string, approve: boolean}) => Promise<object>}} bound kit
  */
-export function createAcpAgentKit({ catalog, journal, transport, actorTiers = DEFAULT_ACTOR_TIERS, deps = acpAgent } = {}) {
+export function createAcpAgentKit({
+  catalog,
+  journal,
+  transport,
+  actorTiers = DEFAULT_ACTOR_TIERS,
+  deps = acpAgent
+} = {}) {
   if (!Array.isArray(catalog)) throw new Error('createAcpAgentKit: catalog (array) is required')
 
   const dispatch = transport ? createDispatch(catalog, transport) : null
@@ -71,17 +75,26 @@ export function createAcpAgentKit({ catalog, journal, transport, actorTiers = DE
    */
   async function handleToolCall({ requestId, tool, input }) {
     if (!dispatch) {
-      await deps.respondAcpToolCall(requestId, { ok: false, error: { code: 'forbidden', message: 'No transport configured.' } })
+      await deps.respondAcpToolCall(requestId, {
+        ok: false,
+        error: { code: 'forbidden', message: 'No transport configured.' }
+      })
       return
     }
     const decision = classify(catalog, actorTiers, AGENT_ACTOR, tool)
     if (decision === 'deny') {
-      await deps.respondAcpToolCall(requestId, { ok: false, error: { code: 'forbidden', message: `Tool "${tool}" is not allowed.` } })
+      await deps.respondAcpToolCall(requestId, {
+        ok: false,
+        error: { code: 'forbidden', message: `Tool "${tool}" is not allowed.` }
+      })
       return
     }
     if (decision === 'approval') {
       if (activeRequestId) {
-        await journal.update(activeRequestId, { status: 'needs_approval', pendingApproval: { kind: 'mcp', requestId, tool, input } })
+        await journal.update(activeRequestId, {
+          status: 'needs_approval',
+          pendingApproval: { kind: 'mcp', requestId, tool, input }
+        })
       }
       return // acp_mcp_tool_result comes later, from approve()
     }
@@ -127,8 +140,7 @@ export function createAcpAgentKit({ catalog, journal, transport, actorTiers = DE
     let turn
     try {
       turn = await turnPromise
-    }
-    catch (error) {
+    } catch (error) {
       await journal.update(requestId, { status: 'failed', error: String(error?.message ?? error) })
       return { requestId, status: 'failed', summary: null, actions: baseActions, question: null, pendingApproval: null }
     }
@@ -163,18 +175,35 @@ export function createAcpAgentKit({ catalog, journal, transport, actorTiers = DE
      */
     async respond({ requestId, message }) {
       if (!activeSessionKey) {
-        return { requestId, status: 'failed', summary: null, actions: [], question: 'No active ACP session.', pendingApproval: null }
+        return {
+          requestId,
+          status: 'failed',
+          summary: null,
+          actions: [],
+          question: 'No active ACP session.',
+          pendingApproval: null
+        }
       }
       let record
       try {
         record = await journal.load(requestId)
-      }
-      catch {
-        return { requestId, status: 'failed', summary: null, actions: [], question: 'Request not found.', pendingApproval: null }
+      } catch {
+        return {
+          requestId,
+          status: 'failed',
+          summary: null,
+          actions: [],
+          question: 'Request not found.',
+          pendingApproval: null
+        }
       }
       await journal.update(requestId, { status: 'running' })
       activeRequestId = requestId
-      return runAndJournal(requestId, record.actions ?? [], deps.runAcpTurn({ sessionKey: activeSessionKey, text: message }))
+      return runAndJournal(
+        requestId,
+        record.actions ?? [],
+        deps.runAcpTurn({ sessionKey: activeSessionKey, text: message })
+      )
     },
 
     /**
@@ -187,19 +216,32 @@ export function createAcpAgentKit({ catalog, journal, transport, actorTiers = DE
       let record
       try {
         record = await journal.load(requestId)
-      }
-      catch {
-        return { requestId, status: 'failed', summary: null, actions: [], question: 'Request not found.', pendingApproval: null }
+      } catch {
+        return {
+          requestId,
+          status: 'failed',
+          summary: null,
+          actions: [],
+          question: 'Request not found.',
+          pendingApproval: null
+        }
       }
 
       const pending = record.pendingApproval
       if (record.status !== 'needs_approval' || !pending) {
-        return { requestId, status: record.status, summary: record.summary, actions: record.actions ?? [], question: null, pendingApproval: null }
+        return {
+          requestId,
+          status: record.status,
+          summary: record.summary,
+          actions: record.actions ?? [],
+          question: null,
+          pendingApproval: null
+        }
       }
 
       if (pending.kind === 'acp') return approveAcpPermission(deps, journal, requestId, record, pending, decision)
       return approveMcpToolCall(deps, dispatch, journal, requestId, record, pending, decision)
-    },
+    }
   }
 }
 
@@ -216,7 +258,7 @@ export function createAcpAgentKit({ catalog, journal, transport, actorTiers = DE
  * means the old "retry a failed dispatch" UX doesn't carry over: once the
  * agent has been told a tool call failed, it has already moved on.
  * @param {object} deps injected acp-agent.js functions
- * @param {Function} dispatch bound `createDispatch` result
+ * @param {(name: string, input?: object) => Promise<object>} dispatch bound `createDispatch` result
  * @param {object} journal journal store
  * @param {string} requestId journal record id
  * @param {object} record loaded journal record
@@ -256,5 +298,12 @@ async function approveAcpPermission(deps, journal, requestId, record, pending, d
   await deps.respondAcpPermission(pending.requestId, option?.optionId)
 
   await journal.update(requestId, { status: 'running', pendingApproval: null })
-  return { requestId, status: 'running', summary: null, actions: record.actions ?? [], question: null, pendingApproval: null }
+  return {
+    requestId,
+    status: 'running',
+    summary: null,
+    actions: record.actions ?? [],
+    question: null,
+    pendingApproval: null
+  }
 }

@@ -1,11 +1,11 @@
 ---
+type: Vue Component
+title: RequestView.vue
+resource: npm/src/components/RequestView.vue
 docgen:
-  source: npm/src/components/RequestView.vue
-  crc: ce95caa9
+  crc: c56a396d
   model: omlx/gemma-4-e4b-it-OptiQ-4bit
 ---
-
-# RequestView.vue
 
 Компонент відображає детальний вигляд результату виконання запиту. Він візуалізує статус, резюме, помилки та список виконаних дій.
 

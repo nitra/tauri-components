@@ -5,7 +5,6 @@ const COMMANDS: &[&str] = &[
     "journal_load",
     "journal_update",
     "journal_list",
-    "omlx_config",
 ];
 
 fn main() {

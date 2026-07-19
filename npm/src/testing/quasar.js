@@ -18,7 +18,7 @@ function quasarGlobal(userGlobal = {}) {
   return {
     ...userGlobal,
     components: { ...quasarComponents, ...userGlobal.components },
-    plugins: [...(userGlobal.plugins || []), [Quasar.Quasar, { config: { dark: false } }]],
+    plugins: [...(userGlobal.plugins || []), [Quasar.Quasar, { config: { dark: false } }]]
   }
 }
 
@@ -42,7 +42,7 @@ export function mountWithQuasar(component, options = {}) {
   const wrapper = {
     render() {
       return h(Quasar.QLayout, { view: 'hHh lpR fFf' }, () => h(Quasar.QPageContainer, () => h(component)))
-    },
+    }
   }
   return mount(wrapper, { ...options, global: quasarGlobal(options.global) })
 }

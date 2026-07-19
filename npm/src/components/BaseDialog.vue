@@ -1,9 +1,5 @@
 <template>
-  <q-dialog
-    @update:model-value="value => emit('update:modelValue', value)"
-    v-bind="$attrs"
-    :model-value="modelValue"
-  >
+  <q-dialog @update:model-value="value => emit('update:modelValue', value)" v-bind="$attrs" :model-value="modelValue">
     <q-card class="base-dialog" :style="{ width: `${width}px` }">
       <q-card-section class="row items-center no-wrap q-pb-sm">
         <q-icon v-if="icon" :name="icon" size="20px" class="q-mr-sm" />
@@ -40,7 +36,7 @@ defineProps({
   title: { type: String, required: true },
   icon: { type: String, default: '' },
   width: { type: Number, default: 520 },
-  bodyClass: { type: String, default: 'q-gutter-md' },
+  bodyClass: { type: String, default: 'q-gutter-md' }
 })
 const emit = defineEmits(['update:modelValue'])
 </script>
