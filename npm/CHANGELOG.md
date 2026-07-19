@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.11.2] - 2026-07-19
+
+### Changed
+
+- feat(storybook): Vue Storybook setup for npm components (#5)
+
 ## [0.11.1] - 2026-07-18
 
 ### Changed
