@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.13.3] - 2026-07-20
+
+### Fixed
+
+- npm-publish CI: прибрано дубльований, зламаний другий release-крок (зайвий checkout скидав `node_modules`, тож `bunx n-rules` резолвився у сторонній однойменний пакет замість локального `@7n/rules` — release/publish уже встигали відпрацювати в першому проході, другий лише псував статус run). Одна канонічна послідовність checkout(persist-credentials: false)→push-auth→release→publish.
+
 ## [0.13.2] - 2026-07-20
 
 ### Changed
