@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.13.2] - 2026-07-20
+
+### Changed
+
+- release: @7n/tauri-components@0.13.1
+
 ## [0.13.1] - 2026-07-20
 
 ### Fixed
