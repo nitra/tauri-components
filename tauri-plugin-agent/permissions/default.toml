@@ -1,10 +1,18 @@
 "$schema" = "schemas/schema.json"
 
 [default]
-description = "Allow all agent commands: request journal (create/load/update/list)."
+description = "Allow all agent commands: request journal (create/load/update/list) and the ACP client (spawn/prompt/cancel, permission responses, domain MCP bridge)."
 permissions = [
     "allow-journal-create",
     "allow-journal-load",
     "allow-journal-update",
     "allow-journal-list",
+    "allow-acp-spawn-agent",
+    "allow-acp-prompt",
+    "allow-acp-cancel",
+    "allow-acp-respond-permission",
+    "allow-acp-config",
+    "allow-acp-register-catalog",
+    "allow-acp-mcp-tool-result",
+    "allow-acp-start-mcp-bridge",
 ]
