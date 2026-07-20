@@ -164,9 +164,19 @@ function handoffContext() {
   const lines = relevant.map(turn =>
     turn.role === 'user'
       ? `Користувач: ${turn.text}`
-      : `Агент (${turn.agentLabel}): ${turn.result?.summary ?? turn.result?.question ?? ''}`
+      : `Попередній агент (${turn.agentLabel}): ${turn.result?.summary ?? turn.result?.question ?? ''}`
   )
-  return `Контекст попередньої розмови (продовжуєш замість іншого агента):\n${lines.join('\n')}\n\nНове повідомлення:\n`
+  // Models tend to latch onto identity-shaped text in context (e.g. a prior
+  // "Я — Codex…" line) and echo it as their own self-description when asked
+  // who they are — so this must say outright that the quoted lines belong to
+  // someone else, not describe the model now answering.
+  return (
+    'СИСТЕМНА ПРИМІТКА: нижче — лог розмови користувача з ІНШИМ агентом, ' +
+    'якого щойно замінили на тебе. Це чужі репліки, наведені лише для ' +
+    'контексту розмови — вони НЕ описують тебе, і якщо там є самоопис ' +
+    'іншого агента, не повторюй і не наслідуй його. На нове повідомлення ' +
+    `відповідай як ти сам.\n\n${lines.join('\n')}\n\nНове повідомлення:\n`
+  )
 }
 
 /**
