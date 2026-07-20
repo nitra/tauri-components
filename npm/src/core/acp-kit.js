@@ -141,8 +141,17 @@ export function createAcpAgentKit({
     try {
       turn = await turnPromise
     } catch (error) {
-      await journal.update(requestId, { status: 'failed', error: String(error?.message ?? error) })
-      return { requestId, status: 'failed', summary: null, actions: baseActions, question: null, pendingApproval: null }
+      const message = String(error?.message ?? error)
+      await journal.update(requestId, { status: 'failed', error: message })
+      return {
+        requestId,
+        status: 'failed',
+        summary: null,
+        error: message,
+        actions: baseActions,
+        question: null,
+        pendingApproval: null
+      }
     }
     const fields = finalizeTurn(turn)
     const actions = [...baseActions, ...turn.trace]
