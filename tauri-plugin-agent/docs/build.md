@@ -3,7 +3,7 @@ type: Rust Module
 title: build.rs
 resource: tauri-plugin-agent/build.rs
 docgen:
-  crc: 877e5b88
+  crc: 605cf916
   model: omlx/gemma-4-e4b-it-OptiQ-4bit
   score: 100
   issues: judge:inaccurate:0.98

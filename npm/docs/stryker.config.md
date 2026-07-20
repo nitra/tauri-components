@@ -1,13 +1,13 @@
 ---
+type: JS Module
+title: stryker.config.mjs
+resource: npm/stryker.config.mjs
 docgen:
-  source: npm/stryker.config.mjs
-  crc: 579865c3
+  crc: 5b3c18ba
   model: omlx/gemma-4-e4b-it-OptiQ-4bit
   score: 100
   judgeModel: openai-codex/gpt-5.4-mini
 ---
-
-# stryker.config.mjs
 
 ## Огляд
 
