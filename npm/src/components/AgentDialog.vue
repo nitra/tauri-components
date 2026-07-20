@@ -90,11 +90,14 @@ const requestId = ref(null)
 const logEl = ref(null)
 const showConfig = ref(false)
 // Latched at the start of a conversation (request()) and reused for every
-// respond() in it: resuming a session keeps talking to whichever agent/tier
-// spawned it — changing the dropdowns mid-conversation only takes effect on
-// the NEXT fresh request(), so re-reading agentKind/modelTier live at every
-// send() would mislabel turns with a model that isn't actually answering.
+// respond() in it, so turns are labeled with whichever agent/tier actually
+// answered rather than whatever the dropdowns currently show.
 const activeAgentLabel = ref('')
+// Spawn identity of the running session — compared against the live
+// dropdowns at send() time so switching agent/tier mid-conversation is
+// detected and restarts the conversation instead of silently talking to the
+// stale agent (see send()).
+const activeSpawnKey = ref('')
 
 /**
  * Human-readable "agent · tier" for whichever preset is currently selected.
@@ -103,6 +106,15 @@ const activeAgentLabel = ref('')
 function currentAgentLabel() {
   const tier = availableTiers.value.find(t => t.id === modelTier.value)
   return `${agentKind.value} · ${tier?.label ?? modelTier.value}`
+}
+
+/**
+ * Identity key for the currently selected agent+tier, used to detect when the
+ * dropdowns have moved away from whichever agent spawned the active session.
+ * @returns {string} spawn key
+ */
+function currentSpawnKey() {
+  return `${agentKind.value}::${modelTier.value}`
 }
 
 // Labels shift once a conversation is under way (fresh request → follow-up).
@@ -140,11 +152,19 @@ function apply(outcome) {
 }
 
 /**
- * Send the current message: start a new request, or resume the conversation.
+ * Send the current message: start a new request, or resume the conversation
+ * — unless the agent/tier dropdowns have moved away from whichever agent
+ * spawned the active session, in which case restart as a fresh conversation
+ * (equivalent to closing and reopening the dialog) so the new message
+ * actually goes to the newly selected agent.
  */
 async function send() {
   const text = prompt.value.trim()
   if (!text || running.value) return
+  if (requestId.value && currentSpawnKey() !== activeSpawnKey.value) {
+    turns.value = []
+    requestId.value = null
+  }
   prompt.value = ''
   turns.value.push({ role: 'user', text })
   scrollToEnd()
@@ -153,7 +173,10 @@ async function send() {
     // Only a fresh request() actually spawns with the currently-selected
     // agent/tier — a respond() keeps talking to whatever the conversation
     // already started with, so the label must not move mid-conversation.
-    if (!requestId.value) activeAgentLabel.value = currentAgentLabel()
+    if (!requestId.value) {
+      activeAgentLabel.value = currentAgentLabel()
+      activeSpawnKey.value = currentSpawnKey()
+    }
     apply(await (requestId.value ? respond(requestId.value, text) : request(text)))
   } catch (error) {
     $q.notify({ type: 'negative', message: String(error?.message ?? error) })

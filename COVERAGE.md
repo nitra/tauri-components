@@ -509,10 +509,10 @@
 
 | Рядок | Оригінал | Заміна | Тип |
 | --- | --- | --- | --- |
-| 22 | `acp' ` | `""` | StringLiteral |
+| 22 | `acp'` | `""` | StringLiteral |
 | 23 | `\?\s*$/` | `/\?\s*/` | Regex |
 | 23 | `\?\s*$/` | `/\?\S*$/` | Regex |
-| 30 | `ypeof text === 'string' ` | `true` | ConditionalExpression |
+| 30 | `ypeof text === 'string'` | `true` | ConditionalExpression |
 | 30 | `ext.trim())` | `text` | MethodExpression |
 | 41 | `urn.stopped === 'refusal')` | `false` | ConditionalExpression |
 | 41 | `refusal')` | `""` | StringLiteral |
@@ -524,28 +524,28 @@
 | 148 | `...baseActions, ...turn.trace]` | `[]` | ArrayDeclaration |
 | 122 | `istening)` | `false` | ConditionalExpression |
 | 123 | `rue` | `false` | BooleanLiteral |
-| 149 | ` ...fields, messages: turn.messages, actions, pendingApproval: null })` | `{}` | ObjectLiteral |
-| 163 | ` status: 'running' })` | `{}` | ObjectLiteral |
-| 162 | ` intent, actor: AGENT_ACTOR })` | `{}` | ObjectLiteral |
-| 167 | ` acp: { agentKind: session.agentKind, sessionKey: session.sessionKey } })` | `{}` | ObjectLiteral |
-| 163 | `running' ` | `""` | StringLiteral |
+| 149 | `...fields, messages: turn.messages, actions, pendingApproval: null })` | `{}` | ObjectLiteral |
+| 163 | `status: 'running' })` | `{}` | ObjectLiteral |
+| 162 | `intent, actor: AGENT_ACTOR })` | `{}` | ObjectLiteral |
+| 167 | `acp: { agentKind: session.agentKind, sessionKey: session.sessionKey } })` | `{}` | ObjectLiteral |
+| 163 | `running'` | `""` | StringLiteral |
 | 168 | `],` | `["Stryker was here"]` | ArrayDeclaration |
-| 168 | ` sessionKey: activeSessionKey, text: intent })` | `{}` | ObjectLiteral |
+| 168 | `sessionKey: activeSessionKey, text: intent })` | `{}` | ObjectLiteral |
 | 231 | `ecord.status !== 'needs_approval' || !pending)` | `record.status !== 'needs_approval' && !pending` | LogicalOperator |
-| 231 | `ecord.status !== 'needs_approval' ` | `false` | ConditionalExpression |
+| 231 | `ecord.status !== 'needs_approval'` | `false` | ConditionalExpression |
 | 231 | `ecord.status !== 'needs_approval' || !pending)` | `false` | ConditionalExpression |
 | 167 | ` agentKind: session.agentKind, sessionKey: session.sessionKey } ` | `{}` | ObjectLiteral |
 | 275 | `...(record.actions ?? []), { tool: pending.tool, input: pending.input, envelope }]` | `[]` | ArrayDeclaration |
 | 275 | `ecord.actions ?? [])` | `record.actions && []` | LogicalOperator |
-| 276 | ` status: 'running', actions, pendingApproval: null })` | `{}` | ObjectLiteral |
-| 275 | ` tool: pending.tool, input: pending.input, envelope }]` | `{}` | ObjectLiteral |
+| 276 | `status: 'running', actions, pendingApproval: null })` | `{}` | ObjectLiteral |
+| 275 | `tool: pending.tool, input: pending.input, envelope }]` | `{}` | ObjectLiteral |
 | 276 | `running',` | `""` | StringLiteral |
-| 296 | `allow' ` | `""` | StringLiteral |
+| 296 | `allow'` | `""` | StringLiteral |
 | 297 | `.kind?.startsWith(` | `o.kind.startsWith` | OptionalChaining |
 | 297 | `ending.options?.find(` | `pending.options.find` | OptionalChaining |
 | 298 | `ption?.optionId)` | `option.optionId` | OptionalChaining |
 | 300 | `running',` | `""` | StringLiteral |
-| 300 | ` status: 'running', pendingApproval: null })` | `{}` | ObjectLiteral |
+| 300 | `status: 'running', pendingApproval: null })` | `{}` | ObjectLiteral |
 | 305 | `ecord.actions ?? [],` | `record.actions && []` | LogicalOperator |
 
 **Приклад тесту** (`npm/src/core/acp-kit.test.js`):
@@ -562,15 +562,15 @@
 | --- | --- | --- | --- |
 | 19 | `pec.required)` | `true` | ConditionalExpression |
 | 18 | `alue === null)` | `false` | ConditionalExpression |
-| 22 | `pec.type === 'string' ` | `true` | ConditionalExpression |
+| 22 | `pec.type === 'string'` | `true` | ConditionalExpression |
 | 23 | `pec.type === 'object' && (typeof value !== 'object' || Array.isArray(value)))` | `false` | ConditionalExpression |
 | 38 | `Unknown tool: ${name}` ` | ```` | StringLiteral |
-| 23 | `object' ` | `""` | StringLiteral |
+| 23 | `object'` | `""` | StringLiteral |
 | 38 | `alse,` | `true` | BooleanLiteral |
 | 41 | `alse,` | `true` | BooleanLiteral |
-| 47 | `rror?.message ` | `error.message` | OptionalChaining |
+| 47 | `rror?.message` | `error.message` | OptionalChaining |
 | 50 | `rror?.kind !== undefined)` | `true` | ConditionalExpression |
-| 50 | `rror?.kind ` | `error.kind` | OptionalChaining |
+| 50 | `rror?.kind` | `error.kind` | OptionalChaining |
 
 **Приклад тесту** (`npm/src/core/dispatch.test.js`):
 
@@ -586,6 +586,7 @@
 | Рядок | Оригінал | Заміна | Тип |
 | --- | --- | --- | --- |
 | 13 | `
+
     properties[key] = spec.description ? { type: spec.type, description: spec.description } : { type: spec.type }
     if (spec.required) required.push(key)
   }` | `{}` | BlockStatement |
@@ -617,7 +618,7 @@
 | 26 | `ctor?.kind]` | `actor.kind` | OptionalChaining |
 | 40 | `lassify(catalog, actorTiers, actor, tool.name) !== 'deny')` | `true` | ConditionalExpression |
 | 40 | `deny')` | `""` | StringLiteral |
-| 28 | `ctor?.kind ` | `actor.kind` | OptionalChaining |
+| 28 | `ctor?.kind` | `actor.kind` | OptionalChaining |
 
 **Приклад тесту** (`npm/src/core/scope.test.js`):
 
