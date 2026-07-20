@@ -161,10 +161,12 @@ function apply(outcome) {
 function handoffContext() {
   const relevant = turns.value.filter(turn => turn.role !== 'switch')
   if (!relevant.length) return ''
+  // Deliberately generic "Агент" — not turn.agentLabel (e.g. "CODEX ·
+  // GPT-5.6 LUNA"): naming the prior model gives an identity-shaped string
+  // for the new one to latch onto and echo when asked who it is, on top of
+  // the disclaimer below.
   const lines = relevant.map(turn =>
-    turn.role === 'user'
-      ? `Користувач: ${turn.text}`
-      : `Попередній агент (${turn.agentLabel}): ${turn.result?.summary ?? turn.result?.question ?? ''}`
+    turn.role === 'user' ? `Користувач: ${turn.text}` : `Агент: ${turn.result?.summary ?? turn.result?.question ?? ''}`
   )
   // Models tend to latch onto identity-shaped text in context (e.g. a prior
   // "Я — Codex…" line) and echo it as their own self-description when asked
