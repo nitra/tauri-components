@@ -30,6 +30,7 @@
     <div v-if="turns.length" ref="logEl" class="chat-log">
       <template v-for="(turn, i) in turns" :key="i">
         <div v-if="turn.role === 'user'" class="chat-user">{{ turn.text }}</div>
+        <div v-else-if="turn.role === 'switch'" class="chat-switch">→ {{ turn.label }}</div>
         <template v-else>
           <div class="chat-model-label">{{ turn.agentLabel }}</div>
           <RequestView :result="turn.result" />
@@ -152,17 +153,39 @@ function apply(outcome) {
 }
 
 /**
+ * Render the transcript so far as plain text, for handing off to a freshly
+ * spawned agent that's replacing whichever one the conversation started
+ * with — a new ACP session has no memory of it otherwise.
+ * @returns {string} context block, or '' when there's nothing to hand off
+ */
+function handoffContext() {
+  const relevant = turns.value.filter(turn => turn.role !== 'switch')
+  if (!relevant.length) return ''
+  const lines = relevant.map(turn =>
+    turn.role === 'user'
+      ? `Користувач: ${turn.text}`
+      : `Агент (${turn.agentLabel}): ${turn.result?.summary ?? turn.result?.question ?? ''}`
+  )
+  return `Контекст попередньої розмови (продовжуєш замість іншого агента):\n${lines.join('\n')}\n\nНове повідомлення:\n`
+}
+
+/**
  * Send the current message: start a new request, or resume the conversation
  * — unless the agent/tier dropdowns have moved away from whichever agent
- * spawned the active session, in which case restart as a fresh conversation
+ * spawned the active session, in which case restart as a fresh ACP session
  * (equivalent to closing and reopening the dialog) so the new message
- * actually goes to the newly selected agent.
+ * actually goes to the newly selected agent. The visible transcript keeps
+ * growing across the switch, and the prior turns are prepended as plain-text
+ * context to the new agent's first message so it can actually continue the
+ * conversation rather than starting blind.
  */
 async function send() {
   const text = prompt.value.trim()
   if (!text || running.value) return
-  if (requestId.value && currentSpawnKey() !== activeSpawnKey.value) {
-    turns.value = []
+  const switching = Boolean(requestId.value) && currentSpawnKey() !== activeSpawnKey.value
+  const payload = switching ? `${handoffContext()}${text}` : text
+  if (switching) {
+    turns.value.push({ role: 'switch', label: currentAgentLabel() })
     requestId.value = null
   }
   prompt.value = ''
@@ -177,7 +200,7 @@ async function send() {
       activeAgentLabel.value = currentAgentLabel()
       activeSpawnKey.value = currentSpawnKey()
     }
-    apply(await (requestId.value ? respond(requestId.value, text) : request(text)))
+    apply(await (requestId.value ? respond(requestId.value, payload) : request(payload)))
   } catch (error) {
     $q.notify({ type: 'negative', message: String(error?.message ?? error) })
   } finally {
@@ -215,6 +238,14 @@ async function send() {
   text-transform: uppercase;
   letter-spacing: 0.02em;
   margin-bottom: -4px;
+}
+
+.chat-switch {
+  align-self: center;
+  font-size: 11px;
+  opacity: 0.55;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
 }
 
 .chat-thinking {
