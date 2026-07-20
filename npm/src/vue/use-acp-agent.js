@@ -1,4 +1,4 @@
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { acpConfig, startAcpMcpBridge } from '../core/acp-agent.js'
 import { createAcpAgentKit } from '../core/acp-kit.js'
 import { createTauriJournalStore } from './journal-store-tauri.js'
@@ -46,6 +46,16 @@ export function useAcpAgent({
   const mcpBridgeUrl = ref(null)
   const journal = createTauriJournalStore()
   const kit = createAcpAgentKit({ catalog, journal, transport, actorTiers })
+
+  // Tiers are per-agent presets (see `agents[kind].tiers` above) — a tier id
+  // picked for the PREVIOUS agent (e.g. cursor's "AVG" = Grok 4.5) doesn't
+  // necessarily exist for the newly selected one (pi has no tiers at all), so
+  // switching agentKind must re-resolve modelTier instead of leaving it
+  // pointing at a tier the UI can no longer show a matching label for.
+  watch(agentKind, kind => {
+    const tiers = agents[kind]?.tiers ?? {}
+    modelTier.value = defaultTier in tiers ? defaultTier : (Object.keys(tiers)[0] ?? '')
+  })
 
   /**
    * Read the per-machine default agent (`ACP_DEFAULT_AGENT`) and start the

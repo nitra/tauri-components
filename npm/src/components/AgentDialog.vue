@@ -29,7 +29,10 @@
     <div v-if="turns.length" ref="logEl" class="chat-log">
       <template v-for="(turn, i) in turns" :key="i">
         <div v-if="turn.role === 'user'" class="chat-user">{{ turn.text }}</div>
-        <RequestView v-else :result="turn.result" />
+        <template v-else>
+          <div class="chat-model-label">{{ turn.agentLabel }}</div>
+          <RequestView :result="turn.result" />
+        </template>
       </template>
       <div v-if="running" class="chat-thinking"><q-spinner-dots size="18px" /> думаю…</div>
     </div>
@@ -85,6 +88,21 @@ const turns = ref([])
 const requestId = ref(null)
 const logEl = ref(null)
 const showConfig = ref(false)
+// Latched at the start of a conversation (request()) and reused for every
+// respond() in it: resuming a session keeps talking to whichever agent/tier
+// spawned it — changing the dropdowns mid-conversation only takes effect on
+// the NEXT fresh request(), so re-reading agentKind/modelTier live at every
+// send() would mislabel turns with a model that isn't actually answering.
+const activeAgentLabel = ref('')
+
+/**
+ * Human-readable "agent · tier" for whichever preset is currently selected.
+ * @returns {string} label
+ */
+function currentAgentLabel() {
+  const tier = availableTiers.value.find(t => t.id === modelTier.value)
+  return `${agentKind.value} · ${tier?.label ?? modelTier.value}`
+}
 
 // Labels shift once a conversation is under way (fresh request → follow-up).
 const inputLabel = computed(() => (turns.value.length ? 'Повідомлення' : 'Prompt'))
@@ -115,7 +133,7 @@ async function scrollToEnd() {
  */
 function apply(outcome) {
   if (outcome.requestId) requestId.value = outcome.requestId
-  turns.value.push({ role: 'agent', result: outcome })
+  turns.value.push({ role: 'agent', result: outcome, agentLabel: activeAgentLabel.value })
   if (outcome.actions?.some(action => action.envelope?.ok)) emit('ran')
   scrollToEnd()
 }
@@ -131,6 +149,10 @@ async function send() {
   scrollToEnd()
   running.value = true
   try {
+    // Only a fresh request() actually spawns with the currently-selected
+    // agent/tier — a respond() keeps talking to whatever the conversation
+    // already started with, so the label must not move mid-conversation.
+    if (!requestId.value) activeAgentLabel.value = currentAgentLabel()
     apply(await (requestId.value ? respond(requestId.value, text) : request(text)))
   } catch (error) {
     $q.notify({ type: 'negative', message: String(error?.message ?? error) })
@@ -160,6 +182,15 @@ async function send() {
   overflow-wrap: anywhere;
   font-size: 13px;
   line-height: 1.45;
+}
+
+.chat-model-label {
+  align-self: flex-start;
+  font-size: 11px;
+  opacity: 0.6;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  margin-bottom: -4px;
 }
 
 .chat-thinking {
