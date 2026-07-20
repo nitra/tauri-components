@@ -126,6 +126,28 @@ export function createAcpAgentKit({
   }
 
   /**
+   * Journal a request as failed and return its structured result envelope —
+   * shared by a session that never spawned and a turn that errored mid-flight.
+   * @param {string} requestId journal record id
+   * @param {object[]} baseActions actions already recorded for this request
+   * @param {unknown} error the thrown/rejected value
+   * @returns {Promise<object>} structured result envelope
+   */
+  async function failedResult(requestId, baseActions, error) {
+    const message = String(error?.message ?? error)
+    await journal.update(requestId, { status: 'failed', error: message })
+    return {
+      requestId,
+      status: 'failed',
+      summary: null,
+      error: message,
+      actions: baseActions,
+      question: null,
+      pendingApproval: null
+    }
+  }
+
+  /**
    * Run one turn, journal the result, and reset `pendingApproval`. Callers
    * must set `activeRequestId` themselves *before* starting the turn — a
    * tool-call/permission-request can arrive (and needs to see the right id)
@@ -141,17 +163,7 @@ export function createAcpAgentKit({
     try {
       turn = await turnPromise
     } catch (error) {
-      const message = String(error?.message ?? error)
-      await journal.update(requestId, { status: 'failed', error: message })
-      return {
-        requestId,
-        status: 'failed',
-        summary: null,
-        error: message,
-        actions: baseActions,
-        question: null,
-        pendingApproval: null
-      }
+      return failedResult(requestId, baseActions, error)
     }
     const fields = finalizeTurn(turn)
     const actions = [...baseActions, ...turn.trace]
@@ -170,7 +182,12 @@ export function createAcpAgentKit({
       await ensureListening()
       const id = await journal.create({ intent, actor: AGENT_ACTOR })
       await journal.update(id, { status: 'running' })
-      const session = await deps.createAcpSession(agent)
+      let session
+      try {
+        session = await deps.createAcpSession(agent)
+      } catch (error) {
+        return failedResult(id, [], error)
+      }
       activeSessionKey = session.sessionKey
       activeRequestId = id
       await journal.update(id, { acp: { agentKind: session.agentKind, sessionKey: session.sessionKey } })

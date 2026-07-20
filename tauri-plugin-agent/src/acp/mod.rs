@@ -102,8 +102,13 @@ struct PermissionOptionView {
 }
 
 /// Spawn `command args…` as an ACP agent subprocess, run `initialize` +
-/// `session/new`, and keep the session alive in a background task. Returns an
-/// internal session key to pass to `acp_prompt`/`acp_cancel`.
+/// `session/new`, and keep the session alive in a background task. Waits for
+/// that handshake to actually succeed (or report its real failure reason)
+/// before returning — otherwise a caller that immediately follows up with
+/// `acp_prompt` races the handshake, and a handshake failure just looks like
+/// the unhelpful "ACP session task dropped the reply channel" from
+/// `acp_prompt` instead of the real cause. Returns an internal session key to
+/// pass to `acp_prompt`/`acp_cancel`.
 #[tauri::command]
 pub async fn acp_spawn_agent<R: Runtime>(
     app: AppHandle<R>,
@@ -137,6 +142,7 @@ pub async fn acp_spawn_agent<R: Runtime>(
 
     let cwd = PathBuf::from(&args.cwd);
     let session_key_for_task = session_key.clone();
+    let (ready_tx, ready_rx) = oneshot::channel::<Result<(), String>>();
 
     // The connection only lives for the duration of this future, so a
     // long-lived session means running the whole lifecycle — init, session/new,
@@ -206,18 +212,30 @@ pub async fn acp_spawn_agent<R: Runtime>(
                 agent_client_protocol::on_receive_request!(),
             )
             .connect_with(agent, |connection: ConnectionTo<Agent>| async move {
-                connection
+                if let Err(e) = connection
                     .send_request(
                         InitializeRequest::new(ProtocolVersion::V1)
                             .client_capabilities(client_capabilities),
                     )
                     .block_task()
-                    .await?;
+                    .await
+                {
+                    let _ = ready_tx.send(Err(e.to_string()));
+                    return Err(e);
+                }
 
-                let new_session = connection
+                let new_session = match connection
                     .send_request(NewSessionRequest::new(cwd).mcp_servers(mcp_servers))
                     .block_task()
-                    .await?;
+                    .await
+                {
+                    Ok(s) => s,
+                    Err(e) => {
+                        let _ = ready_tx.send(Err(e.to_string()));
+                        return Err(e);
+                    }
+                };
+                let _ = ready_tx.send(Ok(()));
 
                 let session_id = new_session.session_id;
                 let mut rx = rx;
@@ -256,7 +274,23 @@ pub async fn acp_spawn_agent<R: Runtime>(
         }
     });
 
-    Ok(session_key)
+    // Wait for the handshake to actually finish before handing the session
+    // key to the caller — see the doc comment above for why.
+    match ready_rx.await {
+        Ok(Ok(())) => Ok(session_key),
+        Ok(Err(message)) => {
+            if let Ok(mut sessions) = state.sessions.lock() {
+                sessions.remove(&session_key);
+            }
+            Err(message)
+        }
+        Err(_) => {
+            if let Ok(mut sessions) = state.sessions.lock() {
+                sessions.remove(&session_key);
+            }
+            Err("ACP session task ended before it could report readiness".to_string())
+        }
+    }
 }
 
 /// Compose the argv `AcpAgent::from_args` expects: leading `NAME=value` env
