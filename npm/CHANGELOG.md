@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.12.0] - 2026-07-20
+
+### Added
+
+- Storybook (Vue3 + Vite) для компонентів `npm/src/components/` — конфіг у
+`npm/.storybook/`, по одному `*.stories.js` на компонент (`BaseDialog`,
+`DialogActions`, `StatePill`, `RequestView`, `AgentDialog`, `AuditDialog`), і
+named vitest-проєкт `"storybook"` (`@storybook/addon-vitest`, browser mode,
+Playwright Chromium) поряд з canonical `"unit"`-проєктом у `npm/vitest.config.mjs`
+— вмикає окремий вимір покриття `Vue (Storybook)` через `@7n/test coverage`.
+
+### Changed
+
+- docs(changelog): додано change-файл для поточних змін у npm workspace
+- chore(lint): дозаповнено cspell-словник, авто-fix markdownlint у docs/
+
 ## [0.11.2] - 2026-07-19
 
 ### Changed
