@@ -14,6 +14,7 @@
     <template v-if="showConfig">
       <q-select v-model="agentKind" :options="availableAgentKinds" dense outlined label="agent" />
       <q-select
+        v-if="availableTiers.length"
         v-model="modelTier"
         :options="availableTiers"
         option-value="id"
