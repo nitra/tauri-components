@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.13.7] - 2026-07-20
+
+### Fixed
+
+- acp_spawn_agent тепер чекає на реальний успіх/провал initialize+session/new перед поверненням session key (усуває гонку з acp_prompt, яка проявлялась як незрозуміла 'dropped the reply channel'); request() у acp-kit.js журналить провал спавну сесії як 'failed' замість непійманого throw
+
 ## [0.13.6] - 2026-07-20
 
 ### Changed
