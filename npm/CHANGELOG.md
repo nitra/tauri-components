@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.15.0] - 2026-07-21
+
+### Changed
+
+- Storybook доведено до канону (rules-lang-js 0.12.0): динамічний viteFinal (VueMacros-стійкий, `empty-vite.config.js`-обхід), msw-storybook-addon + mswLoader, canonical `scripts.storybook`, devDeps governance (msw@2.11.3/msw-storybook-addon@2.0.5 пін у npm/, build-тулінг у корені), CI (setup-playwright-chromium + lint-storybook.yml). Кастомний Material Symbols iconSet/iconMapFn (sym_o_/r_/s_) збережено — легітимна локальна особливість пакета.
+
 ## [0.14.0] - 2026-07-21
 
 ### Added
