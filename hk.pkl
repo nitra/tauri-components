@@ -1,15 +1,28 @@
 amends "package://github.com/jdx/hk/releases/download/v1.47.0/hk@1.47.0#/Config.pkl"
 
 local linters = new Mapping<String, Step> {
-    // Regenerate the published TypeScript declarations from the headless core
-    // (src/index.js + src/core) whenever package JS changes, then stage them so
-    // npm/types/ stays in sync with the source (see n-npm-module, variant A).
+    // Regenerate the published TypeScript declarations from every non-test JS
+    // file under npm/src (not just src/index.js + src/core — components/,
+    // vue/, testing/ ship public API too) whenever package JS changes, then
+    // stage them so npm/types/ stays in sync with the source. npm/src has
+    // real .js files, so per n-npm-module variant A the canonical form is the
+    // direct tsc CLI glob, not a curated tsconfig.emit-types.json include list
+    // (that file's include list was too narrow: it only listed src/index.js +
+    // src/core/**/*.js, silently omitting components/vue/testing types).
     ["gen-types"] {
-        glob = "npm/src/**/*.js"
+        glob = "src/**/*.js"
         dir = "npm"
-        check = "bunx -p typescript tsc -p tsconfig.emit-types.json"
-        fix = "bunx -p typescript tsc -p tsconfig.emit-types.json"
+        check = "bunx -p typescript tsc src/**/*.js --declaration --allowJs --emitDeclarationOnly --outDir types --skipLibCheck"
+        fix = "bunx -p typescript tsc src/**/*.js --declaration --allowJs --emitDeclarationOnly --outDir types --skipLibCheck"
         stage = "npm/types"
+    }
+    // Canonical npm-changelog wiring (n-changelog.mdc / n-npm-module.mdc):
+    // autofix-only — creates a change-file for the last commit subject when
+    // one's missing, no separate `check` step (v14 dropped `check`, only `lint`).
+    ["npm-changelog"] {
+        glob = List("npm/**")
+        check_first = false
+        fix = "N_RULES_CHANGELOG_AUTOFIX=1 npx n-rules lint changelog"
     }
 }
 
