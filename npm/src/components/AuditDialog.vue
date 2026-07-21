@@ -25,7 +25,11 @@
       <div v-if="expandedId === rec.id" class="audit-body">
         <RequestView @respond="msg => onRespond(rec, msg)" :result="rec" :busy="busyId === rec.id" />
         <div v-if="rec.status === 'needs_approval' && rec.pendingApproval" class="audit-approval">
-          <div class="audit-pending">
+          <div v-if="rec.pendingApproval.kind === 'acp'" class="audit-pending">
+            Permission request:
+            <code>{{ rec.pendingApproval.toolCall?.title ?? rec.pendingApproval.toolCall?.toolCallId }}</code>
+          </div>
+          <div v-else class="audit-pending">
             Approve action: <code>{{ rec.pendingApproval.tool }}({{ JSON.stringify(rec.pendingApproval.input) }})</code>
           </div>
           <div class="row q-gutter-sm">

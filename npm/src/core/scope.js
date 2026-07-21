@@ -22,7 +22,7 @@ export function classify(catalog, actorTiers, actor, toolName) {
   const tiers = actorTiers ?? DEFAULT_ACTOR_TIERS
   const tool = getTool(catalog, toolName)
   if (!tool) return 'deny'
-  const rank = TIER_RANK[tool.tier] ?? Number.POSITIVE_INFINITY
+  const rank = TIER_RANK[tool.tier] ?? Infinity
   const max = tiers[actor?.kind] ?? 0
   if (rank <= max) return 'allow'
   if (tool.tier === 'destructive' && actor?.kind === 'agent') return 'approval'

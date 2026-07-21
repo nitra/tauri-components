@@ -3,7 +3,7 @@ type: Vue Component
 title: AgentDialog.vue
 resource: npm/src/components/AgentDialog.vue
 docgen:
-  crc: 9ff2a698
+  crc: 6be89ae5
   model: omlx/gemma-4-e4b-it-OptiQ-4bit
 ---
 

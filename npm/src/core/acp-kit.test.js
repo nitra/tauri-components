@@ -21,7 +21,11 @@ const catalog = [
   }
 ]
 
-/** In-memory journal store matching the injected contract (same as agent-kit.test.js). */
+const CATALOG_ERROR_REGEX = /catalog/
+/**
+ * In-memory journal store matching the injected contract (same as agent-kit.test.js).
+ * @returns {object} fake journal implementation
+ */
 function fakeJournal() {
   const store = new Map()
   let n = 0
@@ -37,13 +41,14 @@ function fakeJournal() {
       store.set(id, { ...store.get(id), ...patch })
       return Promise.resolve()
     },
-    list: () => Promise.resolve([...store.values()])
+    list: () => Promise.resolve(store.values().toArray())
   }
 }
 
 /**
  * Transport that echoes which tool ran (records calls for assertions).
  * @param calls
+ * @returns {(tool: object, input: object) => string} transport handler that records calls and returns a done marker
  */
 function fakeTransport(calls) {
   return (tool, input) => {
@@ -72,6 +77,7 @@ async function flushMicrotasks() {
  * request — so a `runAcpTurn` mock that calls a tool must await this before
  * it may resolve, exactly like the real `acp_prompt` invoke() would still be
  * pending in that window.
+ * @returns {object} fake ACP dependency bundle and emit helpers
  */
 function fakeAcpDeps() {
   let toolCallHandler = null
@@ -81,15 +87,13 @@ function fakeAcpDeps() {
   const toolCallWaiters = new Map()
 
   /**
-   *
+   * Returns the existing or newly created waiter for a tool-call request.
    * @param requestId
+   * @returns {object} waiter with promise and resolver
    */
   function waiterFor(requestId) {
     if (!toolCallWaiters.has(requestId)) {
-      let resolve
-      const promise = new Promise(res => {
-        resolve = res
-      })
+      const { promise, resolve } = Promise.withResolvers()
       toolCallWaiters.set(requestId, { promise, resolve })
     }
     return toolCallWaiters.get(requestId)
@@ -123,7 +127,7 @@ function fakeAcpDeps() {
 
 describe('createAcpAgentKit', () => {
   it('throws without a catalog', () => {
-    expect(() => createAcpAgentKit({})).toThrow(/catalog/)
+    expect(() => createAcpAgentKit({})).toThrow(CATALOG_ERROR_REGEX)
   })
 
   it('runs a request, dispatches an allowed tool call mid-turn, and journals a done result', async () => {
@@ -174,7 +178,7 @@ describe('createAcpAgentKit', () => {
     // still-blocked turn to finish.
     await flushMicrotasks()
 
-    const [pendingId] = [...journal.store.keys()]
+    const [pendingId] = journal.store.keys().toArray()
     expect(journal.store.get(pendingId).status).toBe('needs_approval')
     expect(journal.store.get(pendingId).pendingApproval).toEqual({
       kind: 'mcp',
@@ -213,7 +217,7 @@ describe('createAcpAgentKit', () => {
 
     const requestPromise = kit.request({ intent: 'remove old', agent: { agentKind: 'codex' } })
     await flushMicrotasks()
-    const [pendingId] = [...journal.store.keys()]
+    const [pendingId] = journal.store.keys().toArray()
 
     const approveResult = await kit.approve({ requestId: pendingId, approve: false })
 
@@ -264,29 +268,27 @@ describe('createAcpAgentKit', () => {
       { optionId: 'opt-allow', name: 'Allow', kind: 'allow_once' },
       { optionId: 'opt-reject', name: 'Reject', kind: 'reject_once' }
     ]
-    let requestPromiseResolveGate
+    const { promise: requestPromiseResolveGate, resolve: requestPromiseResolveGateResolve } = Promise.withResolvers()
     deps.runAcpTurn = async () => {
       await emitPermissionRequest({
         requestId: 'perm-1',
         toolCall: { title: 'Edit file.txt' },
         options: permissionOptions
       })
-      await new Promise(resolve => {
-        requestPromiseResolveGate = resolve
-      })
+      await requestPromiseResolveGate
       return { content: 'Edited.', trace: [], messages: [], stopped: undefined }
     }
 
     const requestPromise = kit.request({ intent: 'edit file.txt', agent: { agentKind: 'claude' } })
     await flushMicrotasks()
-    const [pendingId] = [...journal.store.keys()]
+    const [pendingId] = journal.store.keys().toArray()
     expect(journal.store.get(pendingId).pendingApproval.kind).toBe('acp')
 
     const approveResult = await kit.approve({ requestId: pendingId, approve: true })
     expect(approveResult.status).toBe('running')
     expect(respondedPermissions).toEqual([{ requestId: 'perm-1', optionId: 'opt-allow' }])
 
-    requestPromiseResolveGate()
+    requestPromiseResolveGateResolve()
     const finalResult = await requestPromise
     expect(finalResult.status).toBe('done')
   })
@@ -296,7 +298,7 @@ describe('createAcpAgentKit', () => {
     const { deps, emitPermissionRequest, respondedPermissions } = fakeAcpDeps()
     const kit = createAcpAgentKit({ catalog, journal, transport: fakeTransport([]), deps })
 
-    let releaseTurn
+    const { promise: turnReleased, resolve: releaseTurn } = Promise.withResolvers()
     deps.runAcpTurn = async () => {
       await emitPermissionRequest({
         requestId: 'perm-1',
@@ -306,15 +308,13 @@ describe('createAcpAgentKit', () => {
           { optionId: 'opt-reject', name: 'Reject', kind: 'reject_once' }
         ]
       })
-      await new Promise(resolve => {
-        releaseTurn = resolve
-      })
+      await turnReleased
       return { content: 'Skipped that.', trace: [], messages: [], stopped: undefined }
     }
 
     const requestPromise = kit.request({ intent: 'run rm -rf', agent: { agentKind: 'claude' } })
     await flushMicrotasks()
-    const [pendingId] = [...journal.store.keys()]
+    const [pendingId] = journal.store.keys().toArray()
     expect(journal.store.get(pendingId).status).toBe('needs_approval')
 
     const approveResult = await kit.approve({ requestId: pendingId, approve: false })
@@ -338,5 +338,40 @@ describe('createAcpAgentKit', () => {
     const clarify = await kit.request({ intent: 'b', agent: {} })
     expect(clarify.status).toBe('needs_clarification')
     expect(clarify.question).toBe('Which workspace?')
+  })
+
+  it('forwards onChunk through to runAcpTurn for both request() and respond()', async () => {
+    const journal = fakeJournal()
+    const { deps } = fakeAcpDeps()
+    const kit = createAcpAgentKit({ catalog, journal, transport: fakeTransport([]), deps })
+
+    const seenChunks = []
+    deps.runAcpTurn = ({ onChunk }) => {
+      onChunk?.({ text: 'partial', actions: [] })
+      return Promise.resolve({ content: 'done', trace: [], messages: [], stopped: undefined })
+    }
+    const res = await kit.request({
+      intent: 'a',
+      agent: {},
+      onChunk: snapshot => {
+        seenChunks.push(snapshot)
+      }
+    })
+    expect(res.status).toBe('done')
+    expect(seenChunks).toEqual([{ text: 'partial', actions: [] }])
+
+    seenChunks.length = 0
+    deps.runAcpTurn = ({ onChunk }) => {
+      onChunk?.({ text: 'more', actions: [] })
+      return Promise.resolve({ content: 'more', trace: [], messages: [], stopped: undefined })
+    }
+    await kit.respond({
+      requestId: res.requestId,
+      message: 'follow up',
+      onChunk: snapshot => {
+        seenChunks.push(snapshot)
+      }
+    })
+    expect(seenChunks).toEqual([{ text: 'more', actions: [] }])
   })
 })

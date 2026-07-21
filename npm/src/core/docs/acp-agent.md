@@ -3,7 +3,7 @@ type: JS Module
 title: acp-agent.js
 resource: npm/src/core/acp-agent.js
 docgen:
-  crc: a9f48a2c
+  crc: 8fd9fdb8
   model: omlx/gemma-4-e4b-it-OptiQ-4bit
   score: 100
   issues: judge:inaccurate:0.98

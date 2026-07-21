@@ -101,7 +101,7 @@ function applySessionUpdate(state, update) {
  * @param {object} params turn parameters
  * @param {string} params.sessionKey handle from `createAcpSession`
  * @param {string} params.text prompt text for this turn
- * @param {(update: object) => void} [params.onChunk] optional live callback for each raw session/update (UI streaming)
+ * @param {(snapshot: {text: string, actions: {tool: string, input: object, envelope: object|null}[]}) => void} [params.onChunk] optional live callback with the turn's accumulated text/tool-calls so far, fired on every session/update (UI streaming)
  * @returns {Promise<{content: string, steps: number, trace: object[], messages: object[], stopped?: string}>} runAgent()-shaped result
  */
 export async function runAcpTurn({ sessionKey, text, onChunk }) {
@@ -110,7 +110,7 @@ export async function runAcpTurn({ sessionKey, text, onChunk }) {
   const unlisten = await listen('acp://session-update', event => {
     if (event.payload?.sessionKey !== sessionKey) return
     applySessionUpdate(state, event.payload.update)
-    onChunk?.(event.payload.update)
+    onChunk?.({ text: state.text, actions: state.calls.values().toArray() })
   })
 
   try {

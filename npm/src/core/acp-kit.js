@@ -175,10 +175,10 @@ export function createAcpAgentKit({
     /**
      * Start a new ACP-backed request: spawns the agent session and runs the
      * first prompt turn.
-     * @param {{intent: string, agent: object}} opts `agent` is passed straight to `createAcpSession` (agentKind/command/args/env/cwd/…)
+     * @param {{intent: string, agent: object, onChunk?: (snapshot: {text: string, actions: object[]}) => void}} opts `agent` is passed straight to `createAcpSession` (agentKind/command/args/env/cwd/…); `onChunk` streams live text/tool-calls as the turn runs
      * @returns {Promise<object>} structured result envelope
      */
-    async request({ intent, agent }) {
+    async request({ intent, agent, onChunk }) {
       await ensureListening()
       const id = await journal.create({ intent, actor: AGENT_ACTOR })
       await journal.update(id, { status: 'running' })
@@ -191,15 +191,15 @@ export function createAcpAgentKit({
       activeSessionKey = session.sessionKey
       activeRequestId = id
       await journal.update(id, { acp: { agentKind: session.agentKind, sessionKey: session.sessionKey } })
-      return runAndJournal(id, [], deps.runAcpTurn({ sessionKey: activeSessionKey, text: intent }))
+      return runAndJournal(id, [], deps.runAcpTurn({ sessionKey: activeSessionKey, text: intent, onChunk }))
     },
 
     /**
      * Continue the active session with a follow-up message.
-     * @param {{requestId: string, message: string}} opts resume parameters
+     * @param {{requestId: string, message: string, onChunk?: (snapshot: {text: string, actions: object[]}) => void}} opts resume parameters; `onChunk` streams live text/tool-calls as the turn runs
      * @returns {Promise<object>} updated result envelope
      */
-    async respond({ requestId, message }) {
+    async respond({ requestId, message, onChunk }) {
       if (!activeSessionKey) {
         return {
           requestId,
@@ -228,7 +228,7 @@ export function createAcpAgentKit({
       return runAndJournal(
         requestId,
         record.actions ?? [],
-        deps.runAcpTurn({ sessionKey: activeSessionKey, text: message })
+        deps.runAcpTurn({ sessionKey: activeSessionKey, text: message, onChunk })
       )
     },
 

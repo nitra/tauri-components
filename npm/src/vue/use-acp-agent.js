@@ -114,14 +114,20 @@ export function useAcpAgent({
     journal,
     /**
      * @param {string} intent user prompt
-     * @param {{modelTier?: string}} [opts] per-call overrides
+     * @param {{modelTier?: string, onChunk?: (snapshot: {text: string, actions: object[]}) => void}} [opts] per-call overrides; `onChunk` streams live text/tool-calls as the turn runs
      * @returns {Promise<object>} structured result envelope
      */
     request: (intent, opts = {}) => {
       if (opts.modelTier) modelTier.value = opts.modelTier
-      return kit.request({ intent, agent: resolveSpawnArgs() })
+      return kit.request({ intent, agent: resolveSpawnArgs(), onChunk: opts.onChunk })
     },
-    respond: (requestId, message) => kit.respond({ requestId, message }),
+    /**
+     * @param {string} requestId journal record id from a prior request()/respond()
+     * @param {string} message follow-up user message
+     * @param {{onChunk?: (snapshot: {text: string, actions: object[]}) => void}} [opts] `onChunk` streams live text/tool-calls as the turn runs
+     * @returns {Promise<object>} updated result envelope
+     */
+    respond: (requestId, message, opts = {}) => kit.respond({ requestId, message, onChunk: opts.onChunk }),
     approve: (requestId, approve) => kit.approve({ requestId, approve })
   }
 }
