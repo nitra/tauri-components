@@ -3,9 +3,8 @@ type: JS Module
 title: main.js
 resource: npm/.storybook/main.js
 docgen:
-  crc: 2184eb05
+  crc: a8348b2d
   model: openai-codex/gpt-5.4-mini
-  tier: cloud-min
   score: 100
   issues: judge:inaccurate:0.98
   judgeModel: openai-codex/gpt-5.4-mini

@@ -10,7 +10,13 @@
     "commitlint.config.{js,cjs,mjs}"
   ],
   "project": ["**/*.{js,mjs,cjs,jsx,ts,tsx,mts,cts}"],
-  "ignore": ["**/__fixtures__/**", "**/stryker*.mjs", ".pi/**"],
+  "ignore": [
+    "**/__fixtures__/**",
+    "**/stryker*.mjs",
+    ".pi/**",
+    "**/.storybook/empty-vite.config.js",
+    "**/.storybook/mocks/gql-sse.js"
+  ],
   "ignoreDependencies": ["@nitra/cspell-dict", "/@cspell\\/dict-.+/", "graphql", "marked", "vue", "quasar", "@tauri-apps/api", "@tauri-apps/plugin-http"],
   "ignoreBinaries": [
     "actionlint",
