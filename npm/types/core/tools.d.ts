@@ -4,4 +4,4 @@
  * @param {string} name tool name
  * @returns {object|null} the tool definition, or null if unknown
  */
-export function getTool(catalog: object[], name: string): object | null
+export function getTool(catalog: object[], name: string): object | null;

@@ -18,9 +18,18 @@
       "types": "./types/index.d.ts",
       "default": "./src/index.js"
     },
-    "./vue": "./src/vue/index.js",
-    "./components": "./src/components/index.js",
-    "./testing": "./src/testing/index.js"
+    "./vue": {
+      "types": "./types/vue/index.d.ts",
+      "default": "./src/vue/index.js"
+    },
+    "./components": {
+      "types": "./types/components/index.d.ts",
+      "default": "./src/components/index.js"
+    },
+    "./testing": {
+      "types": "./types/testing/index.d.ts",
+      "default": "./src/testing/index.js"
+    }
   },
   "files": [
     "src",
