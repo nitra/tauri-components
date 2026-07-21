@@ -3,9 +3,8 @@ type: JS Module
 title: preview.js
 resource: npm/.storybook/preview.js
 docgen:
-  crc: ed8c5d64
+  crc: 8ee0a8fb
   model: openai-codex/gpt-5.4-mini
-  tier: cloud-min
   score: 100
   issues: judge:inaccurate:0.98
   judgeModel: openai-codex/gpt-5.4-mini

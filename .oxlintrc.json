@@ -417,6 +417,7 @@
     "npm/types/**",
     "demo/node/rules-demo.js",
     "**/schema.graphql",
-    "**/auto-imports.d.ts"
+    "**/auto-imports.d.ts",
+    "**/mockServiceWorker.js"
   ]
 }
