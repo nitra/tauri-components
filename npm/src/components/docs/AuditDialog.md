@@ -3,7 +3,7 @@ type: Vue Component
 title: AuditDialog.vue
 resource: npm/src/components/AuditDialog.vue
 docgen:
-  crc: 8c440daf
+  crc: c716181c
   model: omlx/gemma-4-e4b-it-OptiQ-4bit
 ---
 

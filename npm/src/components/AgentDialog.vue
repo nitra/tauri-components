@@ -142,12 +142,14 @@ async function scrollToEnd() {
 }
 
 /**
- * Append an agent turn, latch the conversation id, refresh the graph on writes.
+ * Fill in the live turn with the final result, latch the conversation id,
+ * refresh the graph on writes.
  * @param {object} outcome structured result from request/respond
+ * @param {object} turn the live turn pushed at the start of send(), updated in place
  */
-function apply(outcome) {
+function apply(outcome, turn) {
   if (outcome.requestId) requestId.value = outcome.requestId
-  turns.value.push({ role: 'agent', result: outcome, agentLabel: activeAgentLabel.value })
+  turn.result = outcome
   if (outcome.actions?.some(action => action.envelope?.ok)) emit('ran')
   scrollToEnd()
 }
@@ -202,17 +204,33 @@ async function send() {
   }
   prompt.value = ''
   turns.value.push({ role: 'user', text })
+  // Only a fresh request() actually spawns with the currently-selected
+  // agent/tier — a respond() keeps talking to whatever the conversation
+  // already started with, so the label must not move mid-conversation.
+  if (!requestId.value) {
+    activeAgentLabel.value = currentAgentLabel()
+    activeSpawnKey.value = currentSpawnKey()
+  }
+  // Pushed before the call resolves and updated in place as session/update
+  // chunks stream in (onChunk below), so the reply grows live instead of
+  // only appearing once the whole turn finishes.
+  const liveTurn = {
+    role: 'agent',
+    agentLabel: activeAgentLabel.value,
+    result: { status: 'running', summary: '', actions: [], question: null, pendingApproval: null }
+  }
+  turns.value.push(liveTurn)
   scrollToEnd()
   running.value = true
   try {
-    // Only a fresh request() actually spawns with the currently-selected
-    // agent/tier — a respond() keeps talking to whatever the conversation
-    // already started with, so the label must not move mid-conversation.
-    if (!requestId.value) {
-      activeAgentLabel.value = currentAgentLabel()
-      activeSpawnKey.value = currentSpawnKey()
+    const onChunk = ({ text: liveText, actions }) => {
+      liveTurn.result = { ...liveTurn.result, summary: liveText, actions }
+      scrollToEnd()
     }
-    apply(await (requestId.value ? respond(requestId.value, payload) : request(payload)))
+    const outcome = await (requestId.value
+      ? respond(requestId.value, payload, { onChunk })
+      : request(payload, { onChunk }))
+    apply(outcome, liveTurn)
   } catch (error) {
     $q.notify({ type: 'negative', message: String(error?.message ?? error) })
   } finally {
