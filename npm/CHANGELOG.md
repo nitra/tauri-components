@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.13.10] - 2026-07-21
+
+### Changed
+
+- chore(deps): n-taze bump — 11 minor/patch (npm), 5 minor/patch (Rust)
+
 ## [0.13.9] - 2026-07-20
 
 ### Changed
