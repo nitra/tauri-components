@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.14.0] - 2026-07-21
+
+### Added
+
+- AgentDialog: інкрементальний стрімінг відповіді (текст/tool-call з'являються по мірі надходження session/update-чанків, а не лише після завершення всього ходу). AuditDialog: коректно показує нативні ACP permission-request поряд з MCP tool-call approval в одному списку.
+
 ## [0.13.11] - 2026-07-21
 
 ### Changed
