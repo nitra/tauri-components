@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.13.11] - 2026-07-21
+
+### Changed
+
+- hk.pkl gen-types тепер реально генерує декларації для всього npm/src (раніше npm/npm/src/**/*.js через дублювання dir-префікса в glob ніколи не матчився — типи для components/vue/testing взагалі не генерувались); exports у package.json отримали types-умову для ./vue, ./components, ./testing (раніше лише "." мав types)
+
 ## [0.13.10] - 2026-07-21
 
 ### Changed
