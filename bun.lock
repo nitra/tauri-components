@@ -8,7 +8,6 @@
         "@7n/rules-ci-github": "^1.9.0",
         "@7n/rules-lang-js": "^0.12.0",
         "@7n/rules-lang-rust": "^0.6.1",
-        "@7n/test": "^0.17.0",
         "@nitra/cspell-dict": "^2.2.2",
         "@nitra/eslint-config": "^3.10.0",
         "@quasar/extras": "^2.0.2",
@@ -31,7 +30,7 @@
     },
     "npm": {
       "name": "@7n/tauri-components",
-      "version": "0.13.10",
+      "version": "0.15.0",
       "dependencies": {
         "marked": "^18.0.7",
       },
@@ -79,8 +78,6 @@
     "@7n/rules-lang-rust": ["@7n/rules-lang-rust@0.6.1", "", { "dependencies": { "smol-toml": "^1.7.0" }, "peerDependencies": { "@7n/rules": ">=1.15.0" } }, "sha512-V/UCQYWO9DCCmr1aD0SJ0JiEXfNARsgZTs9Px+i1LycaHLDC+qH8pi3kcBD4R/EiNLIZdVxEg6W4pN9aXn4xmg=="],
 
     "@7n/tauri-components": ["@7n/tauri-components@workspace:npm"],
-
-    "@7n/test": ["@7n/test@0.17.1", "", { "dependencies": { "@7n/llm-lib": "^2.8.2", "@earendil-works/pi-coding-agent": "^0.80.10", "@vitest/coverage-v8": "^4.1.9", "rollup": "^4.62.2", "vitest": "^4.1.9", "zod": "^4.4.3" }, "bin": { "7n-test": "bin/7n-test.js" } }, "sha512-MnhnKvrE3eZjiDDlsK14DHzPDaFnvRQxsx1fe2Uat8ZQ7RhpPLF0+NYPuqh29scOV6lMjsSf99TdyLxenBW9aA=="],
 
     "@adobe/css-tools": ["@adobe/css-tools@4.5.0", "", {}, "sha512-6OzddxPio9UiWTCemp4N8cYLV2ZN1ncRnV1cVGtve7dhPOtRkleRyx32GQCYSwDYgaHU3USMm84tNsvKzRCa1Q=="],
 
