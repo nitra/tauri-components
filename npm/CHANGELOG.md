@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.16.1] - 2026-07-24
+
+### Fixed
+
+- Лінт-борг CI (Lint JS падав з незапамʼятних часів): oxlint require-await/no-await-expression-member/jsdoc у тестах acp-kit/dispatch, unicorn-правила eslint в acp-agent.js/acp-kit.js; knip — ігнор згенерованих npm/types/** і динамічних плагінів @7n/rules-*
+
 ## [0.16.0] - 2026-07-24
 
 ### Changed
