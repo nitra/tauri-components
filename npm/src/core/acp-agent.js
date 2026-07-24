@@ -116,7 +116,7 @@ export async function runAcpTurn({ sessionKey, text, onChunk }) {
 
   try {
     const stopReason = await invoke('plugin:agent|acp_prompt', { sessionKey, text })
-    const trace = [...state.calls.values()]
+    const trace = state.calls.values().toArray()
     const messages = state.text ? [{ role: 'assistant', content: state.text }] : []
     return {
       content: state.text,

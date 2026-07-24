@@ -38,8 +38,7 @@ function isQuestion(text) {
 function finalizeTurn(turn) {
   const question = isQuestion(turn.content) ? turn.content : null
   let status = 'done'
-  if (turn.stopped === 'max_steps' || turn.stopped === 'refusal') status = 'partial'
-  else if (turn.stopped === 'cancelled') status = 'partial'
+  if (turn.stopped === 'max_steps' || turn.stopped === 'refusal' || turn.stopped === 'cancelled') status = 'partial'
   else if (question) status = 'needs_clarification'
   return { status, summary: question ? null : turn.content || null, question }
 }

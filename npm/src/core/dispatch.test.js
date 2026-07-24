@@ -14,8 +14,10 @@ describe('createDispatch', () => {
 
   it('rejects unknown tools and invalid input before the transport', async () => {
     const dispatch = createDispatch(catalog, () => 'x')
-    expect((await dispatch('nope', {})).error.code).toBe('not_found')
-    expect((await dispatch('echo', {})).error.code).toBe('validation')
+    const notFound = await dispatch('nope', {})
+    expect(notFound.error.code).toBe('not_found')
+    const invalid = await dispatch('echo', {})
+    expect(invalid.error.code).toBe('validation')
   })
 
   it('wraps a thrown error as an io envelope', async () => {
