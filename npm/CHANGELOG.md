@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.16.0] - 2026-07-24
+
+### Changed
+
+- T10 (Ф5, спека llm-cascade): npm-пакет стає чисто фронтендним — useAcpAgent() більше не приймає agents-пресети ({command, args, env}); kind-и/тіри/лейбли UI-пікер бере з нової tauri-команди acp_list_tiers (Rust-пресети llm-lib), спавн — {kind, tier}. Новий експорт listAcpTiers; CODEX_ACP_AGENT_PRESET і core/acp-agent-presets.js видалено (нуль model-знання в пакеті). Плагін: acp_spawn_agent приймає {kind, tier} замість {command, args, env} (T9: транспорт уже на session-API крейта llm-lib).
+
 ## [0.15.0] - 2026-07-21
 
 ### Changed
