@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.16.2] - 2026-07-24
+
+### Fixed
+
+- CI Lint Text: генеровані артефакти прибрані з-під лінтерів (npm/reports/** — v8r/cspell, COVERAGE.md — markdownlint); npm/types переформатовано оксфмтом
+
 ## [0.16.1] - 2026-07-24
 
 ### Fixed
