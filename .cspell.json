@@ -7,6 +7,7 @@
     "**/dist/**",
     "**/target/**",
     "npm/types/**",
+    "npm/reports/**",
     "bun.lock",
     "Cargo.lock",
     "**/CHANGELOG.md",
@@ -20,9 +21,7 @@
     "docs/adr/**",
     "**/mockServiceWorker.js"
   ],
-  "import": [
-    "@nitra/cspell-dict/cspell-ext.json"
-  ],
+  "import": ["@nitra/cspell-dict/cspell-ext.json"],
   "words": [
     "agentclientprotocol",
     "appindicator",
