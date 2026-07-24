@@ -17,11 +17,12 @@ use std::sync::Mutex;
 use agent_client_protocol::schema::v1::{
     ClientCapabilities, FileSystemCapabilities, McpServer, McpServerHttp, PermissionOptionId,
 };
-use agent_client_protocol::AcpAgent;
 use llm_lib::acp::session::{
     create_session, PermissionMode, PermissionRequestEvent, SessionEvent, SessionHandle,
     SessionOptions,
 };
+use llm_lib::acp::AcpAgentKind;
+use llm_lib::Tier;
 use serde::Deserialize;
 use serde_json::Value;
 use tauri::{AppHandle, Emitter, Manager, Runtime, State};
@@ -40,11 +41,15 @@ pub struct AcpState {
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SpawnAgentArgs {
-    pub command: String,
+    /// ACP agent kind — `cursor`/`codex`/`pi`. The spawn command, model
+    /// tiers, and UI labels all come from the Rust presets in `llm-lib`
+    /// (spec Ф5/T10: the webview carries zero model knowledge).
+    pub kind: String,
+    /// Model tier — `min`/`avg`/`max` (defaults to `avg`). Resolved against
+    /// the kind's preset in `llm-lib` (env for codex, `--model` arg for
+    /// cursor, post-session config call for pi).
     #[serde(default)]
-    pub args: Vec<String>,
-    #[serde(default)]
-    pub env: HashMap<String, String>,
+    pub tier: Option<String>,
     pub cwd: String,
     /// Loopback URL of this app's domain MCP bridge (`mcp_bridge`), if the app
     /// registered a catalog. `None` when the agent should get no domain tools.
@@ -88,20 +93,23 @@ struct PermissionOptionView {
     kind: String,
 }
 
-/// Spawn `command args…` as an ACP agent subprocess via the shared crate's
-/// session API and keep the session alive. `create_session` itself waits for
-/// the `initialize` + `session/new` handshake to succeed (or report its real
-/// failure reason) before returning, so a caller that immediately follows up
-/// with `acp_prompt` never races the handshake. Returns an internal session
-/// key to pass to `acp_prompt`/`acp_cancel`.
+/// Spawn the `kind` agent at model `tier` (both resolved against the Rust
+/// presets in `llm-lib`) as an ACP subprocess via the shared crate's session
+/// API and keep the session alive. `create_session` itself waits for the
+/// `initialize` + `session/new` (+ optional post-session config, pi) handshake
+/// to succeed (or report its real failure reason) before returning, so a
+/// caller that immediately follows up with `acp_prompt` never races the
+/// handshake. Returns an internal session key to pass to
+/// `acp_prompt`/`acp_cancel`.
 #[tauri::command]
 pub async fn acp_spawn_agent<R: Runtime>(
     app: AppHandle<R>,
     state: State<'_, AcpState>,
     args: SpawnAgentArgs,
 ) -> Result<String, String> {
-    let agent = AcpAgent::from_args(build_acp_args(&args.command, &args.args, &args.env))
-        .map_err(|e| e.to_string())?;
+    let kind = parse_agent_kind(&args.kind)?;
+    let tier = parse_tier(args.tier.as_deref())?;
+    let agent = kind.tier_spec(tier).map_err(|e| e.to_string())?;
 
     let mut client_capabilities = ClientCapabilities::default();
     client_capabilities.fs = FileSystemCapabilities::new()
@@ -121,6 +129,7 @@ pub async fn acp_spawn_agent<R: Runtime>(
         client_capabilities,
         mcp_servers,
         permission_mode: PermissionMode::External,
+        post_session_config: kind.tier_preset(tier).post_session_config,
         ..SessionOptions::default()
     };
 
@@ -186,14 +195,68 @@ fn forward_session_events<R: Runtime>(
     });
 }
 
-/// Compose the argv `AcpAgent::from_args` expects: leading `NAME=value` env
-/// entries, then the command, then its args (`from_args` treats any leading
-/// `NAME=value`-shaped items as env vars — see `AcpAgent::from_args` docs).
-fn build_acp_args(command: &str, args: &[String], env: &HashMap<String, String>) -> Vec<String> {
-    let mut acp_args: Vec<String> = env.iter().map(|(k, v)| format!("{k}={v}")).collect();
-    acp_args.push(command.to_string());
-    acp_args.extend(args.iter().cloned());
-    acp_args
+fn parse_agent_kind(kind: &str) -> Result<AcpAgentKind, String> {
+    match kind.to_ascii_lowercase().as_str() {
+        "cursor" => Ok(AcpAgentKind::Cursor),
+        "codex" => Ok(AcpAgentKind::Codex),
+        "pi" => Ok(AcpAgentKind::Pi),
+        other => Err(format!("unknown ACP agent kind: {other}")),
+    }
+}
+
+/// `None` falls back to `avg` — the same default the webview picker starts on.
+fn parse_tier(tier: Option<&str>) -> Result<Tier, String> {
+    match tier.unwrap_or("avg").to_ascii_lowercase().as_str() {
+        "min" => Ok(Tier::Min),
+        "avg" => Ok(Tier::Avg),
+        "max" => Ok(Tier::Max),
+        other => Err(format!("unknown model tier: {other}")),
+    }
+}
+
+/// Agent kinds, model tiers, and UI labels straight from the Rust presets in
+/// `llm-lib` (spec Ф5/T10) — same serialization shape as the crate's Node
+/// bridge `getAcpPresets()` export, so JS consumers see one contract
+/// everywhere:
+/// `{ <kind>: { command, label, tiers: { <tier>: { label, env, args,
+/// postSessionConfig } } } }`.
+#[tauri::command]
+pub fn acp_list_tiers() -> Value {
+    let mut kinds = serde_json::Map::new();
+    for (name, kind) in [
+        ("cursor", AcpAgentKind::Cursor),
+        ("codex", AcpAgentKind::Codex),
+        ("pi", AcpAgentKind::Pi),
+    ] {
+        let mut tiers = serde_json::Map::new();
+        for (tier_name, tier) in [("min", Tier::Min), ("avg", Tier::Avg), ("max", Tier::Max)] {
+            let preset = kind.tier_preset(tier);
+            let post_session_config = preset.post_session_config.map(|config| {
+                serde_json::json!({
+                    "configId": config.config_id,
+                    "value": config.value,
+                })
+            });
+            tiers.insert(
+                tier_name.to_string(),
+                serde_json::json!({
+                    "label": preset.label,
+                    "env": preset.env,
+                    "args": preset.extra_args,
+                    "postSessionConfig": post_session_config,
+                }),
+            );
+        }
+        kinds.insert(
+            name.to_string(),
+            serde_json::json!({
+                "command": kind.command(),
+                "label": kind.label(),
+                "tiers": tiers,
+            }),
+        );
+    }
+    Value::Object(kinds)
 }
 
 fn permission_option_kind_str(
@@ -277,7 +340,7 @@ pub fn acp_respond_permission(
 }
 
 /// Per-machine default agent kind, read from `ACP_DEFAULT_AGENT` (e.g.
-/// `codex`/`claude`/`cursor`/`pi`) — not a credential, just which CLI a given
+/// `cursor`/`codex`/`pi`) — not a credential, just which CLI a given
 /// developer has installed, so no settings file needed.
 #[derive(serde::Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -299,17 +362,38 @@ mod tests {
     use super::*;
 
     #[test]
-    fn build_acp_args_puts_env_before_command_before_args() {
-        let mut env = HashMap::new();
-        env.insert("API_KEY".to_string(), "secret".to_string());
-        let args = build_acp_args("npx", &["-y".into(), "codex-acp".into()], &env);
-        assert_eq!(args, vec!["API_KEY=secret", "npx", "-y", "codex-acp"]);
+    fn parse_agent_kind_accepts_every_preset_kind_case_insensitively() {
+        assert_eq!(parse_agent_kind("cursor").unwrap(), AcpAgentKind::Cursor);
+        assert_eq!(parse_agent_kind("Codex").unwrap(), AcpAgentKind::Codex);
+        assert_eq!(parse_agent_kind("PI").unwrap(), AcpAgentKind::Pi);
+        assert!(parse_agent_kind("claude").is_err());
     }
 
     #[test]
-    fn build_acp_args_with_no_env_or_args() {
-        let args = build_acp_args("pi-acp", &[], &HashMap::new());
-        assert_eq!(args, vec!["pi-acp"]);
+    fn parse_tier_defaults_to_avg_and_rejects_unknown() {
+        assert_eq!(parse_tier(None).unwrap(), Tier::Avg);
+        assert_eq!(parse_tier(Some("min")).unwrap(), Tier::Min);
+        assert_eq!(parse_tier(Some("MAX")).unwrap(), Tier::Max);
+        assert!(parse_tier(Some("ultra")).is_err());
+    }
+
+    /// The webview picker renders exactly what this command returns, so every
+    /// kind must carry a command, a label, and three labeled tiers.
+    #[test]
+    fn acp_list_tiers_exposes_every_kind_with_three_labeled_tiers() {
+        let value = acp_list_tiers();
+        let kinds = value.as_object().unwrap();
+        assert_eq!(kinds.len(), 3);
+        for kind in ["cursor", "codex", "pi"] {
+            let entry = kinds[kind].as_object().unwrap();
+            assert!(!entry["command"].as_str().unwrap().is_empty());
+            assert!(!entry["label"].as_str().unwrap().is_empty());
+            let tiers = entry["tiers"].as_object().unwrap();
+            assert_eq!(tiers.len(), 3);
+            for tier in ["min", "avg", "max"] {
+                assert!(!tiers[tier]["label"].as_str().unwrap().is_empty());
+            }
+        }
     }
 
     #[test]

@@ -3,7 +3,7 @@ declare namespace _default {
     export { AuditDialog as component };
     export namespace args {
         let modelValue: boolean;
-        let agent: any;
+        let agent: object;
     }
 }
 export default _default;
@@ -12,10 +12,10 @@ export namespace Empty {
     export namespace args_1 {
         export namespace agent_1 {
             namespace journal {
-                function list(): any[];
+                function list(): never[];
             }
-            function respond(): any;
-            function approve(): any;
+            function respond(): null;
+            function approve(): null;
         }
         export { agent_1 as agent };
     }

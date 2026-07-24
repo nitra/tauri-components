@@ -3,7 +3,7 @@ declare namespace _default {
     export { AgentDialog as component };
     export namespace args {
         let modelValue: boolean;
-        let agent: any;
+        let agent: object;
     }
 }
 export default _default;

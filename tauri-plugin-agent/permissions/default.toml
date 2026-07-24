@@ -12,6 +12,7 @@ permissions = [
     "allow-acp-cancel",
     "allow-acp-respond-permission",
     "allow-acp-config",
+    "allow-acp-list-tiers",
     "allow-acp-register-catalog",
     "allow-acp-mcp-tool-result",
     "allow-acp-start-mcp-bridge",

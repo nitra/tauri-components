@@ -3,7 +3,7 @@ type: JS Module
 title: index.js
 resource: npm/src/index.js
 docgen:
-  crc: 4c44e807
+  crc: 4629815f
 ---
 
 ## Огляд

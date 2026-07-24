@@ -1,43 +1,66 @@
 /**
  * Spawn an ACP agent subprocess and run its `initialize` + `session/new`
- * handshake. Returns a session handle to pass to `runAcpTurn`/`cancelAcpSession`.
+ * handshake. The spawn command, model tiers, and env all live in the Rust
+ * presets (`llm-lib`) — the webview only names a kind and a tier.
+ * Returns a session handle to pass to `runAcpTurn`/`cancelAcpSession`.
  * @param {object} params spawn parameters
- * @param {string} params.agentKind 'codex'|'claude'|'cursor'|'pi' (informational — passed through, not interpreted here)
- * @param {string} params.command executable to spawn (e.g. 'npx')
- * @param {string[]} [params.args] command arguments
- * @param {Record<string,string>} [params.env] extra environment variables for the subprocess
+ * @param {string} params.agentKind 'cursor'|'codex'|'pi' — resolved against the Rust presets
+ * @param {string} [params.tier] model tier 'min'|'avg'|'max' (backend defaults to 'avg')
  * @param {string} params.cwd session working directory (absolute path)
  * @param {string} [params.mcpBridgeUrl] this app's domain MCP bridge URL (from acpStartMcpBridge), omit for no domain tools
  * @param {boolean} [params.allowFs] grant fs/read_text_file + fs/write_text_file
  * @param {boolean} [params.allowTerminal] grant terminal/*
  * @returns {Promise<{sessionKey: string, agentKind: string}>} session handle
  */
-export function createAcpSession({ agentKind, command, args, env, cwd, mcpBridgeUrl, allowFs, allowTerminal }: {
+export function createAcpSession({ agentKind, tier, cwd, mcpBridgeUrl, allowFs, allowTerminal }: {
     agentKind: string;
-    command: string;
-    args?: string[];
-    env?: Record<string, string>;
+    tier?: string | undefined;
     cwd: string;
-    mcpBridgeUrl?: string;
-    allowFs?: boolean;
-    allowTerminal?: boolean;
+    mcpBridgeUrl?: string | undefined;
+    allowFs?: boolean | undefined;
+    allowTerminal?: boolean | undefined;
 }): Promise<{
     sessionKey: string;
     agentKind: string;
 }>;
+/**
+ * List the ACP agent kinds, model tiers, and UI labels from the Rust presets
+ * (`llm-lib`) — the single source the tier picker renders from.
+ * @returns {Promise<Record<string, {command: string, label: string, tiers: Record<string, {label: string, env: Record<string,string>, args: string[], postSessionConfig: {configId: string, value: string}|null}>}>>} presets keyed by kind ('cursor'|'codex'|'pi')
+ */
+export function listAcpTiers(): Promise<Record<string, {
+    command: string;
+    label: string;
+    tiers: Record<string, {
+        label: string;
+        env: Record<string, string>;
+        args: string[];
+        postSessionConfig: {
+            configId: string;
+            value: string;
+        } | null;
+    }>;
+}>>;
 /**
  * Run one prompt turn on an already-spawned ACP session, streaming
  * `session/update` chunks into the same shape `runAgent()` returned.
  * @param {object} params turn parameters
  * @param {string} params.sessionKey handle from `createAcpSession`
  * @param {string} params.text prompt text for this turn
- * @param {(update: object) => void} [params.onChunk] optional live callback for each raw session/update (UI streaming)
+ * @param {(snapshot: {text: string, actions: {tool: string, input: object, envelope: object|null}[]}) => void} [params.onChunk] optional live callback with the turn's accumulated text/tool-calls so far, fired on every session/update (UI streaming)
  * @returns {Promise<{content: string, steps: number, trace: object[], messages: object[], stopped?: string}>} runAgent()-shaped result
  */
 export function runAcpTurn({ sessionKey, text, onChunk }: {
     sessionKey: string;
     text: string;
-    onChunk?: (update: object) => void;
+    onChunk?: ((snapshot: {
+        text: string;
+        actions: {
+            tool: string;
+            input: object;
+            envelope: object | null;
+        }[];
+    }) => void) | undefined;
 }): Promise<{
     content: string;
     steps: number;

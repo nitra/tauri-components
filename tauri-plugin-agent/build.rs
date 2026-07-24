@@ -10,6 +10,7 @@ const COMMANDS: &[&str] = &[
     "acp_cancel",
     "acp_respond_permission",
     "acp_config",
+    "acp_list_tiers",
     "acp_register_catalog",
     "acp_mcp_tool_result",
     "acp_start_mcp_bridge",
