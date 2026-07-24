@@ -16,10 +16,12 @@ tauri = { version = "2", features = [] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 uuid = { version = "1", features = ["v4"] }
-# ACP client role: spawns codex-acp/claude-agent-acp/cursor `agent acp`/pi-acp as a
-# stdio subprocess and drives the initialize -> session/new -> session/prompt lifecycle.
-# Versions pinned against the real agentclientprotocol/rust-sdk v1.2.0 tag (verified via
-# its workspace Cargo.toml — the crate's own README lags behind the actual API).
+# Shared ACP implementation (spec Ф4/T9): spawn, initialize -> session/new
+# handshake, prompt turns, idle-timeout, permission events — the plugin is only
+# a thin Tauri adapter over its session API.
+llm-lib = { git = "https://github.com/nitra/7n-rules.git", tag = "llm-lib-v0.2.1" }
+# ACP schema types (ClientCapabilities/McpServer/StopReason/…) shared with
+# llm-lib — kept in the same 1.x range so cargo unifies both onto one version.
 agent-client-protocol = "1.3.0"
 # Domain MCP bridge: exposes the app's tool catalog to whichever ACP agent is spawned.
 agent-client-protocol-rmcp = "2.0.1"

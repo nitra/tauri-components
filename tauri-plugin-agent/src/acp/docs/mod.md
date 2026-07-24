@@ -3,7 +3,7 @@ type: Rust Module
 title: mod.rs
 resource: tauri-plugin-agent/src/acp/mod.rs
 docgen:
-  crc: 934b692c
+  crc: ed593fe1
   model: omlx/gemma-4-e4b-it-OptiQ-4bit
   score: 100
   issues: judge:inaccurate:0.98
