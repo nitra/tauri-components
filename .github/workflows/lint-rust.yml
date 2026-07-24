@@ -23,6 +23,11 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+    # Єдиний Rust-crate репо живе в tauri-plugin-agent/ (кореневого
+    # Cargo.toml немає) — без цього cargo fmt/clippy падають одразу.
+    defaults:
+      run:
+        working-directory: tauri-plugin-agent
     steps:
       - uses: actions/checkout@v6
         with:
@@ -33,6 +38,8 @@ jobs:
           components: rustfmt, clippy
 
       - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: tauri-plugin-agent
 
       - name: Rustfmt
         run: cargo fmt --all -- --check

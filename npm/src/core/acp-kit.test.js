@@ -47,7 +47,7 @@ function fakeJournal() {
 
 /**
  * Transport that echoes which tool ran (records calls for assertions).
- * @param calls
+ * @param {object[]} calls sink that receives one {name, input} record per dispatched call
  * @returns {(tool: object, input: object) => string} transport handler that records calls and returns a done marker
  */
 function fakeTransport(calls) {
@@ -88,7 +88,7 @@ function fakeAcpDeps() {
 
   /**
    * Returns the existing or newly created waiter for a tool-call request.
-   * @param requestId
+   * @param {string} requestId id of the pending tool-call
    * @returns {object} waiter with promise and resolver
    */
   function waiterFor(requestId) {
@@ -104,20 +104,24 @@ function fakeAcpDeps() {
     respondedPermissions,
     waitForToolCallReply: requestId => waiterFor(requestId).promise,
     deps: {
-      createAcpSession: async agent => ({ sessionKey: 's1', agentKind: agent.agentKind }),
-      runAcpTurn: async () => ({ content: '', trace: [], messages: [], stopped: undefined }),
-      onAcpToolCall: async handler => {
+      createAcpSession: agent => Promise.resolve({ sessionKey: 's1', agentKind: agent.agentKind }),
+      runAcpTurn: () => Promise.resolve({ content: '', trace: [], messages: [], stopped: undefined }),
+      onAcpToolCall: handler => {
         toolCallHandler = handler
+        return Promise.resolve()
       },
-      onAcpPermissionRequest: async handler => {
+      onAcpPermissionRequest: handler => {
         permissionHandler = handler
+        return Promise.resolve()
       },
-      respondAcpToolCall: async (requestId, envelope) => {
+      respondAcpToolCall: (requestId, envelope) => {
         respondedToolCalls.push({ requestId, envelope })
         waiterFor(requestId).resolve(envelope)
+        return Promise.resolve()
       },
-      respondAcpPermission: async (requestId, optionId) => {
+      respondAcpPermission: (requestId, optionId) => {
         respondedPermissions.push({ requestId, optionId })
+        return Promise.resolve()
       }
     },
     emitToolCall: payload => toolCallHandler(payload),
@@ -330,11 +334,12 @@ describe('createAcpAgentKit', () => {
     const { deps } = fakeAcpDeps()
     const kit = createAcpAgentKit({ catalog, journal, transport: fakeTransport([]), deps })
 
-    deps.runAcpTurn = async () => ({ content: '', trace: [], messages: [], stopped: 'max_steps' })
+    deps.runAcpTurn = () => Promise.resolve({ content: '', trace: [], messages: [], stopped: 'max_steps' })
     const maxSteps = await kit.request({ intent: 'a', agent: {} })
     expect(maxSteps.status).toBe('partial')
 
-    deps.runAcpTurn = async () => ({ content: 'Which workspace?', trace: [], messages: [], stopped: undefined })
+    deps.runAcpTurn = () =>
+      Promise.resolve({ content: 'Which workspace?', trace: [], messages: [], stopped: undefined })
     const clarify = await kit.request({ intent: 'b', agent: {} })
     expect(clarify.status).toBe('needs_clarification')
     expect(clarify.question).toBe('Which workspace?')

@@ -171,8 +171,7 @@ fn forward_session_events<R: Runtime>(
                     let view = PermissionRequestView {
                         session_key: session_key.clone(),
                         request_id: request_id.clone(),
-                        tool_call: serde_json::to_value(&request.tool_call)
-                            .unwrap_or(Value::Null),
+                        tool_call: serde_json::to_value(&request.tool_call).unwrap_or(Value::Null),
                         options: request
                             .options
                             .iter()
