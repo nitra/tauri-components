@@ -1,13 +1,13 @@
 ---
+type: JS Module
+title: scope.js
+resource: npm/src/core/scope.js
 docgen:
-  source: npm/src/core/scope.js
-  crc: e3226974
+  crc: 625af57e
   model: omlx/gemma-4-e4b-it-OptiQ-4bit
   score: 100
   judgeModel: openai-codex/gpt-5.4-mini
 ---
-
-# scope.js
 
 ## Огляд
 

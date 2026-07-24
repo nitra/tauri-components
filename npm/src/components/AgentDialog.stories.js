@@ -8,12 +8,12 @@ import AgentDialog from './AgentDialog.vue'
 function mockAgent() {
   return {
     agentKind: ref('codex'),
-    modelTier: ref('AVG'),
-    availableAgentKinds: ref(['codex', 'claude']),
+    modelTier: ref('avg'),
+    availableAgentKinds: ref(['cursor', 'codex', 'pi']),
     availableTiers: ref([
-      { id: 'MIN', label: 'MIN' },
-      { id: 'AVG', label: 'AVG' },
-      { id: 'MAX', label: 'MAX' }
+      { id: 'min', label: 'GPT-5.6 Luna' },
+      { id: 'avg', label: 'GPT-5.6 Terra' },
+      { id: 'max', label: 'GPT-5.6 Sol' }
     ]),
     loadEnv: () => Promise.resolve(),
     request: text => ({ status: 'done', summary: `Echo: ${text}` }),

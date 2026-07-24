@@ -3,7 +3,7 @@ type: JS Module
 title: use-acp-agent.js
 resource: npm/src/vue/use-acp-agent.js
 docgen:
-  crc: 42706f67
+  crc: 2de61341
   model: omlx/gemma-4-e4b-it-OptiQ-4bit
   score: 100
   issues: judge:inaccurate:0.97

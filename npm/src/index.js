@@ -7,6 +7,7 @@ export {
   acpConfig,
   cancelAcpSession,
   createAcpSession,
+  listAcpTiers,
   onAcpPermissionRequest,
   onAcpToolCall,
   respondAcpPermission,
@@ -14,7 +15,6 @@ export {
   runAcpTurn,
   startAcpMcpBridge
 } from './core/acp-agent.js'
-export { CODEX_ACP_AGENT_PRESET } from './core/acp-agent-presets.js'
 export { createAcpAgentKit } from './core/acp-kit.js'
 export { createDispatch, validateInput } from './core/dispatch.js'
 export { listTools, toJsonSchema, toolManifest } from './core/manifest.js'

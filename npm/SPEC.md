@@ -67,10 +67,11 @@ export function validateInput(tool, input) // → string|null
 export function toJsonSchema(input)        // → JSON Schema
 
 // ACP session driver (spawn/prompt/cancel зовнішнього агента + MCP-міст)
-export { acpConfig, cancelAcpSession, createAcpSession, onAcpPermissionRequest,
-         onAcpToolCall, respondAcpPermission, respondAcpToolCall, runAcpTurn,
-         startAcpMcpBridge } // з core/acp-agent.js
-export { CODEX_ACP_AGENT_PRESET } // з core/acp-agent-presets.js — готовий MIN/AVG/MAX пресет для codex
+export { acpConfig, cancelAcpSession, createAcpSession, listAcpTiers,
+         onAcpPermissionRequest, onAcpToolCall, respondAcpPermission,
+         respondAcpToolCall, runAcpTurn, startAcpMcpBridge } // з core/acp-agent.js
+// Пресетів агентів у пакеті немає (спека llm-cascade, Ф5/T10): kind-и, тіри
+// й лейбли віддає бекенд-команда acp_list_tiers з Rust-пресетів llm-lib.
 
 // фабрика, зв'язана з каталогом додатка
 export function createAcpAgentKit(config) // див. 3.2
@@ -115,9 +116,9 @@ export function useAcpAgent(config) // фабрика-композабл: буд
 ```js
 useAcpAgent({
   catalog,       // обов'язково: масив TOOLS додатка — передається у доменний MCP-міст
-  agents,        // Record<'codex'|'claude'|'cursor'|'pi', { command, args?, env?, tiers }>
-                // — presets запуску кожного агента; MIN/AVG/MAX тіри в tiers
-  defaultTier,   // optional, дефолт 'AVG'
+                // (агенти/тіри НЕ конфігуруються тут — loadEnv() бере їх з
+                // бекенд-команди acp_list_tiers, тобто з Rust-пресетів llm-lib)
+  defaultTier,   // optional, дефолт 'avg'
   cwd,           // обов'язково: робоча директорія сесії (абсолютний шлях)
   actorTiers,    // optional: max executable tier rank per actor kind
   transport,     // optional, дефолт tauriTransport
@@ -134,9 +135,10 @@ omlx base URL один раз. Додаток пише тонку обгортк
 ```js
 // app/src/composables/use-agent.js (у кожному додатку — кілька рядків)
 import { useAcpAgent } from '@7n/tauri-components/vue'
-import { CODEX_ACP_AGENT_PRESET } from '@7n/tauri-components'
 import { catalog } from '../tool/catalog.js'
-export const useAgent = () => useAcpAgent({ catalog, cwd: projectRoot, agents: { codex: CODEX_ACP_AGENT_PRESET } })
+// Агенти/тіри приїжджають з бекенда (acp_list_tiers) у loadEnv() — жодних
+// пресетів на боці додатка.
+export const useAgent = () => useAcpAgent({ catalog, cwd: projectRoot })
 ```
 
 ### 3.4 `@7n/tauri-components/components`
@@ -165,8 +167,7 @@ npm/
 ├── src/
 │   ├── index.js                 # re-export core
 │   ├── core/
-│   │   ├── acp-agent.js         # createAcpSession/runAcpTurn/… — spawn/prompt/cancel зовнішнього ACP-агента
-│   │   ├── acp-agent-presets.js # CODEX_ACP_AGENT_PRESET (MIN/AVG/MAX)
+│   │   ├── acp-agent.js         # createAcpSession/runAcpTurn/listAcpTiers/… — spawn/prompt/cancel зовнішнього ACP-агента
 │   │   ├── dispatch.js          # createDispatch, validateInput (catalog → param)
 │   │   ├── manifest.js          # toolManifest(catalog, allow), toJsonSchema
 │   │   ├── scope.js             # classify(catalog, actorTiers, actor, name), scopedManifest
@@ -194,7 +195,6 @@ npm/
 | Що                     | task                          | mlmail / myshare                   |
 | ---------------------- | ----------------------------- | ---------------------------------- |
 | `catalog.js`           | scan/workspaces/create/delete | свої mail/share інструменти        |
-| `agents` (ACP presets) | codex/claude/cursor/pi команди| ті самі presets або свої           |
 | `cwd`                  | корінь проєкту task           | корінь проєкту mlmail/myshare      |
 | Rust-команди           | `scan_tasks`, `create_task`…  | свої `#[tauri::command]`           |
 
@@ -223,9 +223,10 @@ MCP-міст (`acp_register_catalog`, `acp_mcp_tool_result`, `acp_start_mcp_brid
 
 > `omlx_config` — команда старого omlx/runAgent-шляху — видалена разом з
 > `useAgent()`/`use-omlx.js` (див. CHANGELOG). ACP-агент не потребує окремого
-> settings-файлу для вибору моделі: MIN/AVG/MAX резолвиться через `agents`-пресети
-> (§3.3), а який CLI спавнити — через `ACP_DEFAULT_AGENT` (`acp_config()`).
-
+> settings-файлу для вибору моделі: min/avg/max резолвиться бекендом з
+> Rust-пресетів `llm-lib` (`acp_list_tiers`), а який CLI спавнити — через
+> `ACP_DEFAULT_AGENT` (`acp_config()`).
+>
 > Crate **не** в npm-workspace, тож пуш у `main` його не публікує в npm —
 > додатки тягнуть його як git-залежність у `Cargo.toml`.
 

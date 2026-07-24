@@ -2,10 +2,11 @@ import { invoke } from '@tauri-apps/api/core'
 import { listen } from '@tauri-apps/api/event'
 
 // ACP session driver: instead of running our own chat-completion loop, we
-// spawn an external ACP agent (codex-acp/claude-agent-acp/cursor `agent acp`/
-// pi-acp) via the Rust plugin's acp_* commands and stream its `session/update`
-// notifications back into a {content, trace, messages, stopped?} shape that
-// acp-kit.js's runAndJournal folds straight into the journal.
+// spawn an external ACP agent (cursor/codex/pi — spawn commands live in the
+// Rust presets, `llm-lib`) via the Rust plugin's acp_* commands and stream its
+// `session/update` notifications back into a {content, trace, messages,
+// stopped?} shape that acp-kit.js's runAndJournal folds straight into the
+// journal.
 //
 // Domain-tool approval (the MCP bridge's `acp://mcp-tool-call`) and native ACP
 // permission requests (`acp://permission-request`) are separate event streams
@@ -16,32 +17,32 @@ import { listen } from '@tauri-apps/api/event'
 
 /**
  * Spawn an ACP agent subprocess and run its `initialize` + `session/new`
- * handshake. Returns a session handle to pass to `runAcpTurn`/`cancelAcpSession`.
+ * handshake. The spawn command, model tiers, and env all live in the Rust
+ * presets (`llm-lib`) — the webview only names a kind and a tier.
+ * Returns a session handle to pass to `runAcpTurn`/`cancelAcpSession`.
  * @param {object} params spawn parameters
- * @param {string} params.agentKind 'codex'|'claude'|'cursor'|'pi' (informational — passed through, not interpreted here)
- * @param {string} params.command executable to spawn (e.g. 'npx')
- * @param {string[]} [params.args] command arguments
- * @param {Record<string,string>} [params.env] extra environment variables for the subprocess
+ * @param {string} params.agentKind 'cursor'|'codex'|'pi' — resolved against the Rust presets
+ * @param {string} [params.tier] model tier 'min'|'avg'|'max' (backend defaults to 'avg')
  * @param {string} params.cwd session working directory (absolute path)
  * @param {string} [params.mcpBridgeUrl] this app's domain MCP bridge URL (from acpStartMcpBridge), omit for no domain tools
  * @param {boolean} [params.allowFs] grant fs/read_text_file + fs/write_text_file
  * @param {boolean} [params.allowTerminal] grant terminal/*
  * @returns {Promise<{sessionKey: string, agentKind: string}>} session handle
  */
-export async function createAcpSession({
-  agentKind,
-  command,
-  args = [],
-  env = {},
-  cwd,
-  mcpBridgeUrl,
-  allowFs = false,
-  allowTerminal = false
-}) {
+export async function createAcpSession({ agentKind, tier, cwd, mcpBridgeUrl, allowFs = false, allowTerminal = false }) {
   const sessionKey = await invoke('plugin:agent|acp_spawn_agent', {
-    args: { command, args, env, cwd, mcpBridgeUrl, allowFs, allowTerminal }
+    args: { kind: agentKind, tier, cwd, mcpBridgeUrl, allowFs, allowTerminal }
   })
   return { sessionKey, agentKind }
+}
+
+/**
+ * List the ACP agent kinds, model tiers, and UI labels from the Rust presets
+ * (`llm-lib`) — the single source the tier picker renders from.
+ * @returns {Promise<Record<string, {command: string, label: string, tiers: Record<string, {label: string, env: Record<string,string>, args: string[], postSessionConfig: {configId: string, value: string}|null}>}>>} presets keyed by kind ('cursor'|'codex'|'pi')
+ */
+export function listAcpTiers() {
+  return invoke('plugin:agent|acp_list_tiers')
 }
 
 /**

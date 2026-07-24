@@ -10,9 +10,9 @@
 export function createAcpAgentKit({ catalog, journal, transport, actorTiers, deps }?: {
     catalog: object[];
     journal: object;
-    transport?: (tool: object, input: object) => unknown;
-    actorTiers?: Record<string, number>;
-    deps?: object;
+    transport?: ((tool: object, input: object) => unknown) | undefined;
+    actorTiers?: Record<string, number> | undefined;
+    deps?: object | undefined;
 }): {
     request: (opts: {
         intent: string;

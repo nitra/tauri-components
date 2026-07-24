@@ -39,6 +39,7 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
             acp::acp_cancel,
             acp::acp_respond_permission,
             acp::acp_config,
+            acp::acp_list_tiers,
             mcp_bridge::acp_register_catalog,
             mcp_bridge::acp_mcp_tool_result,
             mcp_bridge::acp_start_mcp_bridge,
