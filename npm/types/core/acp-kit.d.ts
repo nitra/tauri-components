@@ -7,23 +7,20 @@
  * @param {object} [config.deps] injectable `acp-agent.js` functions (tests only — defaults to the real module)
  * @returns {{request: (opts: {intent: string, agent: object}) => Promise<object>, respond: (opts: {requestId: string, message: string}) => Promise<object>, approve: (opts: {requestId: string, approve: boolean}) => Promise<object>}} bound kit
  */
-export function createAcpAgentKit({ catalog, journal, transport, actorTiers, deps }?: {
-    catalog: object[];
-    journal: object;
-    transport?: ((tool: object, input: object) => unknown) | undefined;
-    actorTiers?: Record<string, number> | undefined;
-    deps?: object | undefined;
+export function createAcpAgentKit({
+  catalog,
+  journal,
+  transport,
+  actorTiers,
+  deps
+}?: {
+  catalog: object[]
+  journal: object
+  transport?: (tool: object, input: object) => unknown
+  actorTiers?: Record<string, number>
+  deps?: object
 }): {
-    request: (opts: {
-        intent: string;
-        agent: object;
-    }) => Promise<object>;
-    respond: (opts: {
-        requestId: string;
-        message: string;
-    }) => Promise<object>;
-    approve: (opts: {
-        requestId: string;
-        approve: boolean;
-    }) => Promise<object>;
-};
+  request: (opts: { intent: string; agent: object }) => Promise<object>
+  respond: (opts: { requestId: string; message: string }) => Promise<object>
+  approve: (opts: { requestId: string; approve: boolean }) => Promise<object>
+}

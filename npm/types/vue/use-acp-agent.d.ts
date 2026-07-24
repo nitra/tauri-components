@@ -7,10 +7,16 @@
  * @param {(tool: object, input: object) => unknown} [config.transport] tool transport (default Tauri invoke)
  * @returns {object} in-app ACP agent gateway
  */
-export function useAcpAgent({ catalog, defaultTier, cwd, actorTiers, transport }?: {
-    catalog: object[];
-    defaultTier?: string | undefined;
-    cwd: string;
-    actorTiers?: Record<string, number> | undefined;
-    transport?: ((tool: object, input: object) => unknown) | undefined;
-}): object;
+export function useAcpAgent({
+  catalog,
+  defaultTier,
+  cwd,
+  actorTiers,
+  transport
+}?: {
+  catalog: object[]
+  defaultTier?: string
+  cwd: string
+  actorTiers?: Record<string, number>
+  transport?: (tool: object, input: object) => unknown
+}): object

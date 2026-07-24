@@ -21,6 +21,7 @@
   ],
   "ignoreDependencies": [
     "@nitra/cspell-dict",
+    "@nitra/stylelint-config",
     "/@cspell\\/dict-.+/",
     "@7n/rules-ci-github",
     "@7n/rules-lang-js",
