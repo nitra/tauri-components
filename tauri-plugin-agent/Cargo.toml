@@ -19,7 +19,7 @@ uuid = { version = "1", features = ["v4"] }
 # Shared ACP implementation (spec Ф4/T9): spawn, initialize -> session/new
 # handshake, prompt turns, idle-timeout, permission events — the plugin is only
 # a thin Tauri adapter over its session API.
-llm-lib = { git = "https://github.com/nitra/7n-rules.git", tag = "llm-lib-v0.2.2" }
+llm-lib = { git = "https://github.com/nitra/7n-rules.git", tag = "llm-lib-v0.2.3" }
 # ACP schema types (ClientCapabilities/McpServer/StopReason/…) shared with
 # llm-lib — kept in the same 1.x range so cargo unifies both onto one version.
 agent-client-protocol = "1.3.0"
