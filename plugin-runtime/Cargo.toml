@@ -1,0 +1,16 @@
+[package]
+name = "plugin-runtime"
+version = "0.1.0"
+description = "Wasmtime plugin runtime: shared Engine, per-invocation Store, fuel/epoch/memory limits, circuit breaker."
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+
+[dependencies]
+serde = { workspace = true }
+thiserror = { workspace = true }
+wasmtime = { workspace = true }
+
+[dev-dependencies]
+tempfile = { workspace = true }
