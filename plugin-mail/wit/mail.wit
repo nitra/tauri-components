@@ -8,11 +8,29 @@ record message-metadata {
   date: string,
 }
 
+/// Draft create request — maps to capability `mail:draft.create` (account scope).
+record draft-create-request {
+  account-id: string,
+  to: string,
+  subject: string,
+  body: string,
+}
+
+record draft-create-result {
+  draft-id: string,
+}
+
 interface metadata {
   /// Fetch metadata for one message. Host enforces grant + scope before I/O.
   get-message-metadata: func(message-id: string) -> result<message-metadata, string>;
 }
 
+interface draft {
+  /// Create a draft. Host enforces grant + account scope; mutating → audit.
+  create-draft: func(req: draft-create-request) -> result<draft-create-result, string>;
+}
+
 world mail-host {
   import metadata;
+  import draft;
 }

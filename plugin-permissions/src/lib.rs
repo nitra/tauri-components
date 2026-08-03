@@ -215,6 +215,93 @@ pub fn grant_store_path(app_data: &Path) -> PathBuf {
     app_data.join("plugins").join("grants.json")
 }
 
+/// Default audit retention: 30 days (spec §4.4).
+pub const AUDIT_RETENTION_SECS: u64 = 30 * 24 * 60 * 60;
+
+/// One mutating plugin action (no body / content payloads).
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct AuditEntry {
+    pub plugin_id: String,
+    pub plugin_version: String,
+    pub action_id: String,
+    pub capability: String,
+    pub scope: Scope,
+    /// `ok`, `denied`, or `error:<reason>` — never includes mail body.
+    pub result: String,
+    pub correlation_id: String,
+    pub timestamp_unix: u64,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+struct AuditStoreFile {
+    entries: Vec<AuditEntry>,
+}
+
+/// Local audit log for mutating plugin operations (30d retention).
+#[derive(Debug, Clone)]
+pub struct AuditStore {
+    path: PathBuf,
+    data: AuditStoreFile,
+}
+
+impl AuditStore {
+    /// Load from JSON or start empty.
+    pub fn open(path: impl Into<PathBuf>) -> Result<Self, PermissionsError> {
+        let path = path.into();
+        let data = if path.exists() {
+            serde_json::from_str(&fs::read_to_string(&path)?)?
+        } else {
+            AuditStoreFile::default()
+        };
+        Ok(Self { path, data })
+    }
+
+    /// Append an entry and prune anything older than retention.
+    pub fn append(&mut self, entry: AuditEntry, now_unix: u64) -> Result<(), PermissionsError> {
+        self.data.entries.push(entry);
+        self.purge_older_than(now_unix.saturating_sub(AUDIT_RETENTION_SECS))?;
+        self.save()
+    }
+
+    /// Entries newest-last (append order).
+    pub fn list(&self) -> &[AuditEntry] {
+        &self.data.entries
+    }
+
+    /// Drop entries with `timestamp_unix < cutoff_unix`.
+    pub fn purge_older_than(&mut self, cutoff_unix: u64) -> Result<(), PermissionsError> {
+        self.data
+            .entries
+            .retain(|e| e.timestamp_unix >= cutoff_unix);
+        self.save()
+    }
+
+    /// User-initiated full purge.
+    pub fn purge_all(&mut self) -> Result<(), PermissionsError> {
+        self.data.entries.clear();
+        self.save()
+    }
+
+    /// Remove audit rows for one plugin (uninstall).
+    pub fn purge_plugin(&mut self, plugin_id: &str) -> Result<(), PermissionsError> {
+        self.data.entries.retain(|e| e.plugin_id != plugin_id);
+        self.save()
+    }
+
+    fn save(&self) -> Result<(), PermissionsError> {
+        if let Some(parent) = self.path.parent() {
+            fs::create_dir_all(parent)?;
+        }
+        fs::write(&self.path, serde_json::to_string_pretty(&self.data)?)?;
+        Ok(())
+    }
+}
+
+/// Resolve default audit-store path under an app-data root.
+pub fn audit_store_path(app_data: &Path) -> PathBuf {
+    app_data.join("plugins").join("audit.json")
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -254,5 +341,44 @@ mod tests {
         store.check("com.example.x", "u1", &scope).unwrap();
         store.purge_plugin("com.example.x").unwrap();
         assert!(store.check("com.example.x", "u1", &scope).is_err());
+    }
+
+    fn sample_audit(ts: u64) -> AuditEntry {
+        AuditEntry {
+            plugin_id: "com.example.x".into(),
+            plugin_version: "0.1.0".into(),
+            action_id: "createDraft".into(),
+            capability: "mail:draft.create".into(),
+            scope: Scope {
+                capability: "mail:draft.create".into(),
+                resource_kind: "account".into(),
+                resource_id: Some("acct_1".into()),
+            },
+            result: "ok".into(),
+            correlation_id: "c1".into(),
+            timestamp_unix: ts,
+        }
+    }
+
+    #[test]
+    fn audit_append_and_retention_purge() {
+        let dir = tempdir().unwrap();
+        let mut store = AuditStore::open(dir.path().join("audit.json")).unwrap();
+        let now = 10_000_000u64;
+        store
+            .append(sample_audit(now - AUDIT_RETENTION_SECS - 10), now)
+            .unwrap();
+        store.append(sample_audit(now - 60), now).unwrap();
+        assert_eq!(store.list().len(), 1);
+        assert_eq!(store.list()[0].timestamp_unix, now - 60);
+    }
+
+    #[test]
+    fn audit_user_purge_all() {
+        let dir = tempdir().unwrap();
+        let mut store = AuditStore::open(dir.path().join("audit.json")).unwrap();
+        store.append(sample_audit(100), 100).unwrap();
+        store.purge_all().unwrap();
+        assert!(store.list().is_empty());
     }
 }
