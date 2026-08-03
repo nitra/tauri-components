@@ -1,11 +1,11 @@
 ---
-type: Rust Module
+type: Module
 title: mail_abi.rs
 resource: plugin-runtime/src/mail_abi.rs
 docgen:
-  crc: pending
+  crc: be42097d
 ---
 
 ## Огляд
 
-Core-Wasm ABI `nitra_mail.get_metadata` → `MailHost`. Sample WAT `MAIL_READER_WAT` читає `msg_1` під grant.
+Core-Wasm linker imports nitra_mail.get_metadata + create_draft; DRAFT_HELPER_WAT.

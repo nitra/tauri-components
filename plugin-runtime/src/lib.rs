@@ -22,9 +22,13 @@ use wasmtime::{Config, Engine, Linker, Module, Store, StoreLimits, StoreLimitsBu
 
 mod mail_abi;
 
-pub use mail_abi::{MAIL_READER_OUT_PTR, MAIL_READER_WAT};
+pub use mail_abi::{
+    DRAFT_HELPER_OUT_PTR, DRAFT_HELPER_WAT, MAIL_READER_OUT_PTR, MAIL_READER_WAT,
+    SAMPLE_DRAFT_REQ_JSON,
+};
 pub use plugin_mail::{
-    scope_metadata_message, GrantGatedMailHost, MailError, MailHost, MessageMetadata, MockMailHost,
+    scope_draft_account, scope_metadata_message, DraftCreateRequest, DraftCreateResult,
+    GrantGatedMailHost, MailError, MailHost, MessageMetadata, MockMailHost, CAP_MAIL_DRAFT_CREATE,
     CAP_MAIL_METADATA_READ,
 };
 
@@ -177,7 +181,10 @@ pub(crate) struct HostState {
     pub(crate) limits: StoreLimits,
     pub(crate) mail: Option<Arc<dyn MailHost>>,
     pub(crate) last_meta_json: Option<String>,
+    pub(crate) last_draft_json: Option<String>,
 }
+
+type InvokeHostJson = (Vec<wasmtime::Val>, Option<String>, Option<String>);
 
 /// Shared Wasmtime engine + loaded plugins.
 pub struct PluginRuntime {
@@ -289,8 +296,8 @@ impl PluginRuntime {
         handle: &PluginHandle,
         mail: Arc<dyn MailHost>,
     ) -> Result<MessageMetadata, RuntimeError> {
-        let (results, json) =
-            self.invoke_guarded_with_json(handle, "read_meta", &[], Some(mail))?;
+        let (results, meta, _) =
+            self.invoke_guarded_with_host_json(handle, "read_meta", &[], Some(mail))?;
         let code = match results.first() {
             Some(wasmtime::Val::I32(v)) => *v,
             _ => return Err(RuntimeError::Invalid("read_meta must return i32".into())),
@@ -303,7 +310,35 @@ impl PluginRuntime {
                 "mail metadata abi error {code}"
             )));
         }
-        let json = json.ok_or_else(|| RuntimeError::Invalid("missing metadata json".into()))?;
+        let json = meta.ok_or_else(|| RuntimeError::Invalid("missing metadata json".into()))?;
+        serde_json::from_str(&json).map_err(|e| RuntimeError::Invalid(e.to_string()))
+    }
+
+    /// Run sample `handle_action` → host `create_draft`; returns draft result JSON.
+    pub fn handle_action_via_plugin(
+        &self,
+        handle: &PluginHandle,
+        mail: Arc<dyn MailHost>,
+    ) -> Result<DraftCreateResult, RuntimeError> {
+        let (results, _, draft) =
+            self.invoke_guarded_with_host_json(handle, "handle_action", &[], Some(mail))?;
+        let code = match results.first() {
+            Some(wasmtime::Val::I32(v)) => *v,
+            _ => {
+                return Err(RuntimeError::Invalid(
+                    "handle_action must return i32".into(),
+                ))
+            }
+        };
+        if code == mail_abi::ABI_DENIED {
+            return Err(RuntimeError::Invalid("mail draft denied".into()));
+        }
+        if code < 0 {
+            return Err(RuntimeError::Invalid(format!(
+                "mail draft abi error {code}"
+            )));
+        }
+        let json = draft.ok_or_else(|| RuntimeError::Invalid("missing draft json".into()))?;
         serde_json::from_str(&json).map_err(|e| RuntimeError::Invalid(e.to_string()))
     }
 
@@ -324,17 +359,17 @@ impl PluginRuntime {
         args: &[wasmtime::Val],
         mail: Option<Arc<dyn MailHost>>,
     ) -> Result<Vec<wasmtime::Val>, RuntimeError> {
-        let (results, _) = self.invoke_guarded_with_json(handle, export, args, mail)?;
+        let (results, _, _) = self.invoke_guarded_with_host_json(handle, export, args, mail)?;
         Ok(results)
     }
 
-    fn invoke_guarded_with_json(
+    fn invoke_guarded_with_host_json(
         &self,
         handle: &PluginHandle,
         export: &str,
         args: &[wasmtime::Val],
         mail: Option<Arc<dyn MailHost>>,
-    ) -> Result<(Vec<wasmtime::Val>, Option<String>), RuntimeError> {
+    ) -> Result<InvokeHostJson, RuntimeError> {
         let nested = INVOKE_DEPTH.with(|d| d.get() > 0);
         if nested {
             return Err(RuntimeError::NestedInvocation {
@@ -381,7 +416,7 @@ impl PluginRuntime {
         export: &str,
         args: &[wasmtime::Val],
         mail: Option<Arc<dyn MailHost>>,
-    ) -> Result<(Vec<wasmtime::Val>, Option<String>), RuntimeError> {
+    ) -> Result<InvokeHostJson, RuntimeError> {
         let store_limits = StoreLimitsBuilder::new()
             .memory_size(self.limits.memory_bytes)
             .trap_on_grow_failure(true)
@@ -393,6 +428,7 @@ impl PluginRuntime {
                 limits: store_limits,
                 mail,
                 last_meta_json: None,
+                last_draft_json: None,
             },
         );
         store.limiter(|state| &mut state.limits);
@@ -426,8 +462,9 @@ impl PluginRuntime {
 
         match call {
             Ok(()) => {
-                let json = store.data().last_meta_json.clone();
-                Ok((results, json))
+                let meta = store.data().last_meta_json.clone();
+                let draft = store.data().last_draft_json.clone();
+                Ok((results, meta, draft))
             }
             Err(err) => Err(classify_trap(err)),
         }
@@ -708,6 +745,7 @@ mod tests {
                 subject: "Hello meta".into(),
                 date: "2026-08-03".into(),
             }],
+            ..Default::default()
         };
         let mail: Arc<dyn MailHost> = Arc::new(GrantGatedMailHost::new(
             mock,
@@ -745,6 +783,7 @@ mod tests {
                 subject: "Hello meta".into(),
                 date: "2026-08-03".into(),
             }],
+            ..Default::default()
         };
         let mail: Arc<dyn MailHost> = Arc::new(GrantGatedMailHost::new(
             mock,
@@ -761,6 +800,82 @@ mod tests {
             .load_wat("com.example.mail-reader", MAIL_READER_WAT)
             .unwrap();
         let err = rt.read_meta_via_plugin(&h, mail).unwrap_err();
+        assert!(
+            err.to_string().contains("denied"),
+            "expected denied, got {err}"
+        );
+    }
+
+    #[test]
+    fn sample_plugin_creates_draft_with_grant() {
+        use plugin_permissions::Grant;
+        use std::sync::Mutex;
+        use tempfile::tempdir;
+
+        assert_eq!(SAMPLE_DRAFT_REQ_JSON.len(), 82);
+
+        let dir = tempdir().unwrap();
+        let grants = Arc::new(Mutex::new(
+            plugin_permissions::GrantStore::open(dir.path().join("g.json")).unwrap(),
+        ));
+        grants
+            .lock()
+            .unwrap()
+            .grant(Grant {
+                plugin_id: "com.example.draft-helper".into(),
+                user_id: "u1".into(),
+                scope: scope_draft_account("acct_1"),
+                granted_at_unix: 1,
+            })
+            .unwrap();
+
+        let mock = MockMailHost::default();
+        let drafts = Arc::clone(&mock.drafts);
+        let mail: Arc<dyn MailHost> = Arc::new(GrantGatedMailHost::new(
+            mock,
+            grants,
+            "com.example.draft-helper",
+            "u1",
+        ));
+
+        let rt = runtime_with(ResourceLimits {
+            wall_clock: Duration::from_secs(5),
+            ..ResourceLimits::default()
+        });
+        let h = rt
+            .load_wat("com.example.draft-helper", DRAFT_HELPER_WAT)
+            .unwrap();
+        rt.activate(&h).unwrap();
+        let result = rt.handle_action_via_plugin(&h, mail).unwrap();
+        assert_eq!(result.draft_id, "draft_1");
+        assert_eq!(drafts.lock().unwrap().len(), 1);
+        assert_eq!(drafts.lock().unwrap()[0].account_id, "acct_1");
+    }
+
+    #[test]
+    fn sample_plugin_draft_denied_without_grant() {
+        use std::sync::Mutex;
+        use tempfile::tempdir;
+
+        let dir = tempdir().unwrap();
+        let grants = Arc::new(Mutex::new(
+            plugin_permissions::GrantStore::open(dir.path().join("g.json")).unwrap(),
+        ));
+        let mail: Arc<dyn MailHost> = Arc::new(GrantGatedMailHost::new(
+            MockMailHost::default(),
+            grants,
+            "com.example.draft-helper",
+            "u1",
+        ));
+
+        let rt = runtime_with(ResourceLimits {
+            wall_clock: Duration::from_secs(5),
+            ..ResourceLimits::default()
+        });
+        let h = rt
+            .load_wat("com.example.draft-helper", DRAFT_HELPER_WAT)
+            .unwrap();
+        let err = rt.handle_action_via_plugin(&h, mail).unwrap_err();
         assert!(
             err.to_string().contains("denied"),
             "expected denied, got {err}"

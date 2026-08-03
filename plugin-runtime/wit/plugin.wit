@@ -1,9 +1,11 @@
 package nitra:plugin@0.1.0;
 
-/// Platform lifecycle world for nitra plugins (M2 core-wasm path; Component loader in M3+).
+/// Platform lifecycle world for nitra plugins (M2 core-wasm path; Component loader later).
 world plugin {
   export activate: func() -> result<_, string>;
   export deactivate: func() -> result<_, string>;
   /// Cheap health probe used by runtime smoke / benchmark.
   export ping: func() -> result<u32, string>;
+  /// Handle a validated A2UI action (M5). Host checks capability before invoke.
+  export handle-action: func(action-json: string) -> result<string, string>;
 }
