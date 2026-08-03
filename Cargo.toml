@@ -1,0 +1,31 @@
+[workspace]
+resolver = "2"
+members = [
+  "tauri-plugin-agent",
+  "plugin-manifest",
+  "plugin-permissions",
+  "plugin-package",
+  "plugin-dev-cli",
+]
+
+[workspace.package]
+edition = "2021"
+license = "MIT"
+authors = ["nitra"]
+repository = "https://github.com/nitra/tauri-components"
+
+[workspace.dependencies]
+anyhow = "1"
+ed25519-dalek = { version = "2", features = ["rand_core"] }
+hex = "0.4"
+rand = "0.8"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+sha2 = "0.10"
+thiserror = "2"
+toml = "0.8"
+zip = { version = "2", default-features = false, features = ["deflate"] }
+tempfile = "3"
+clap = { version = "4", features = ["derive"] }
+keyring = { version = "3", features = ["apple-native", "windows-native", "linux-native"] }
+semver = { version = "1", features = ["serde"] }

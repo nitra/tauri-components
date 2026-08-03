@@ -1,0 +1,18 @@
+[package]
+name = "plugin-manifest"
+version = "0.1.0"
+description = "Parse and validate nitra plugin.toml manifests for .nitra-plugin packages."
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+
+[dependencies]
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+toml = { workspace = true }
+semver = { version = "1", features = ["serde"] }
+
+[dev-dependencies]
+tempfile = { workspace = true }
