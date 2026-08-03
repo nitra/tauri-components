@@ -1,0 +1,18 @@
+package nitra:mail@0.1.0;
+
+/// Read-only message metadata (no body) — maps to capability `mail:metadata.read`.
+record message-metadata {
+  id: string,
+  from: string,
+  subject: string,
+  date: string,
+}
+
+interface metadata {
+  /// Fetch metadata for one message. Host enforces grant + scope before I/O.
+  get-message-metadata: func(message-id: string) -> result<message-metadata, string>;
+}
+
+world mail-host {
+  import metadata;
+}

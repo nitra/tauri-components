@@ -18,7 +18,15 @@ use std::sync::{Arc, Mutex};
 use std::thread;
 use std::time::{Duration, Instant};
 
-use wasmtime::{Config, Engine, Instance, Module, Store, StoreLimits, StoreLimitsBuilder, Trap};
+use wasmtime::{Config, Engine, Linker, Module, Store, StoreLimits, StoreLimitsBuilder, Trap};
+
+mod mail_abi;
+
+pub use mail_abi::{MAIL_READER_OUT_PTR, MAIL_READER_WAT};
+pub use plugin_mail::{
+    scope_metadata_message, GrantGatedMailHost, MailError, MailHost, MessageMetadata, MockMailHost,
+    CAP_MAIL_METADATA_READ,
+};
 
 thread_local! {
     /// Same-thread re-entrancy into `invoke` (host callback → same plugin).
@@ -165,8 +173,10 @@ impl PluginHandle {
     }
 }
 
-struct HostState {
-    limits: StoreLimits,
+pub(crate) struct HostState {
+    pub(crate) limits: StoreLimits,
+    pub(crate) mail: Option<Arc<dyn MailHost>>,
+    pub(crate) last_meta_json: Option<String>,
 }
 
 /// Shared Wasmtime engine + loaded plugins.
@@ -262,13 +272,69 @@ impl PluginRuntime {
         }
     }
 
-    /// Generic export call with limits + guards.
+    /// Invoke an export with a [`MailHost`] linked as `nitra_mail.get_metadata`.
+    pub fn invoke_with_mail(
+        &self,
+        handle: &PluginHandle,
+        export: &str,
+        args: &[wasmtime::Val],
+        mail: Arc<dyn MailHost>,
+    ) -> Result<Vec<wasmtime::Val>, RuntimeError> {
+        self.invoke_guarded(handle, export, args, Some(mail))
+    }
+
+    /// Run sample `read_meta` export and parse JSON metadata produced via host import.
+    pub fn read_meta_via_plugin(
+        &self,
+        handle: &PluginHandle,
+        mail: Arc<dyn MailHost>,
+    ) -> Result<MessageMetadata, RuntimeError> {
+        let (results, json) =
+            self.invoke_guarded_with_json(handle, "read_meta", &[], Some(mail))?;
+        let code = match results.first() {
+            Some(wasmtime::Val::I32(v)) => *v,
+            _ => return Err(RuntimeError::Invalid("read_meta must return i32".into())),
+        };
+        if code == mail_abi::ABI_DENIED {
+            return Err(RuntimeError::Invalid("mail metadata denied".into()));
+        }
+        if code < 0 {
+            return Err(RuntimeError::Invalid(format!(
+                "mail metadata abi error {code}"
+            )));
+        }
+        let json = json.ok_or_else(|| RuntimeError::Invalid("missing metadata json".into()))?;
+        serde_json::from_str(&json).map_err(|e| RuntimeError::Invalid(e.to_string()))
+    }
+
+    /// Generic export call with limits + guards (no mail imports).
     pub fn invoke(
         &self,
         handle: &PluginHandle,
         export: &str,
         args: &[wasmtime::Val],
     ) -> Result<Vec<wasmtime::Val>, RuntimeError> {
+        self.invoke_guarded(handle, export, args, None)
+    }
+
+    fn invoke_guarded(
+        &self,
+        handle: &PluginHandle,
+        export: &str,
+        args: &[wasmtime::Val],
+        mail: Option<Arc<dyn MailHost>>,
+    ) -> Result<Vec<wasmtime::Val>, RuntimeError> {
+        let (results, _) = self.invoke_guarded_with_json(handle, export, args, mail)?;
+        Ok(results)
+    }
+
+    fn invoke_guarded_with_json(
+        &self,
+        handle: &PluginHandle,
+        export: &str,
+        args: &[wasmtime::Val],
+        mail: Option<Arc<dyn MailHost>>,
+    ) -> Result<(Vec<wasmtime::Val>, Option<String>), RuntimeError> {
         let nested = INVOKE_DEPTH.with(|d| d.get() > 0);
         if nested {
             return Err(RuntimeError::NestedInvocation {
@@ -291,7 +357,7 @@ impl PluginRuntime {
                 });
             }
 
-            let invoke_result = self.invoke_inner(handle, export, args);
+            let invoke_result = self.invoke_inner(handle, export, args, mail);
             handle.slot.inflight.fetch_sub(1, Ordering::SeqCst);
 
             let mut circuit = handle.slot.circuit.lock().expect("circuit");
@@ -314,7 +380,8 @@ impl PluginRuntime {
         handle: &PluginHandle,
         export: &str,
         args: &[wasmtime::Val],
-    ) -> Result<Vec<wasmtime::Val>, RuntimeError> {
+        mail: Option<Arc<dyn MailHost>>,
+    ) -> Result<(Vec<wasmtime::Val>, Option<String>), RuntimeError> {
         let store_limits = StoreLimitsBuilder::new()
             .memory_size(self.limits.memory_bytes)
             .trap_on_grow_failure(true)
@@ -324,6 +391,8 @@ impl PluginRuntime {
             &self.engine,
             HostState {
                 limits: store_limits,
+                mail,
+                last_meta_json: None,
             },
         );
         store.limiter(|state| &mut state.limits);
@@ -331,7 +400,10 @@ impl PluginRuntime {
         store.set_epoch_deadline(1);
         store.epoch_deadline_trap();
 
-        let instance = Instance::new(&mut store, &handle.slot.module, &[])?;
+        let mut linker = Linker::new(&self.engine);
+        mail_abi::define_mail_imports(&mut linker)?;
+        let instance = linker.instantiate(&mut store, &handle.slot.module)?;
+
         let func = instance
             .get_func(&mut store, export)
             .ok_or_else(|| RuntimeError::MissingExport(export.to_string()))?;
@@ -340,7 +412,6 @@ impl PluginRuntime {
         let flag = Arc::clone(&still_running);
         let engine = self.engine.clone();
         let wall = self.limits.wall_clock;
-        // Detached on drop: must not `join` or every successful invoke blocks for `wall`.
         let _ticker = thread::spawn(move || {
             thread::sleep(wall);
             if flag.load(Ordering::SeqCst) {
@@ -354,7 +425,10 @@ impl PluginRuntime {
         still_running.store(false, Ordering::SeqCst);
 
         match call {
-            Ok(()) => Ok(results),
+            Ok(()) => {
+                let json = store.data().last_meta_json.clone();
+                Ok((results, json))
+            }
             Err(err) => Err(classify_trap(err)),
         }
     }
@@ -603,6 +677,93 @@ mod tests {
         assert!(
             warm_p95 <= BENCHMARK_WARM_P95_MS,
             "warm p95 {warm_p95}ms exceeds SLO {BENCHMARK_WARM_P95_MS}ms — update §2 Й placeholders"
+        );
+    }
+
+    #[test]
+    fn sample_plugin_reads_metadata_with_grant() {
+        use plugin_permissions::Grant;
+        use std::sync::Mutex;
+        use tempfile::tempdir;
+
+        let dir = tempdir().unwrap();
+        let grants = Arc::new(Mutex::new(
+            plugin_permissions::GrantStore::open(dir.path().join("g.json")).unwrap(),
+        ));
+        grants
+            .lock()
+            .unwrap()
+            .grant(Grant {
+                plugin_id: "com.example.mail-reader".into(),
+                user_id: "u1".into(),
+                scope: scope_metadata_message("msg_1"),
+                granted_at_unix: 1,
+            })
+            .unwrap();
+
+        let mock = MockMailHost {
+            messages: vec![MessageMetadata {
+                id: "msg_1".into(),
+                from: "a@example.com".into(),
+                subject: "Hello meta".into(),
+                date: "2026-08-03".into(),
+            }],
+        };
+        let mail: Arc<dyn MailHost> = Arc::new(GrantGatedMailHost::new(
+            mock,
+            grants,
+            "com.example.mail-reader",
+            "u1",
+        ));
+
+        let rt = runtime_with(ResourceLimits {
+            wall_clock: Duration::from_secs(5),
+            ..ResourceLimits::default()
+        });
+        let h = rt
+            .load_wat("com.example.mail-reader", MAIL_READER_WAT)
+            .unwrap();
+        rt.activate(&h).unwrap();
+        let meta = rt.read_meta_via_plugin(&h, mail).unwrap();
+        assert_eq!(meta.subject, "Hello meta");
+        assert_eq!(meta.from, "a@example.com");
+    }
+
+    #[test]
+    fn sample_plugin_denied_without_grant() {
+        use std::sync::Mutex;
+        use tempfile::tempdir;
+
+        let dir = tempdir().unwrap();
+        let grants = Arc::new(Mutex::new(
+            plugin_permissions::GrantStore::open(dir.path().join("g.json")).unwrap(),
+        ));
+        let mock = MockMailHost {
+            messages: vec![MessageMetadata {
+                id: "msg_1".into(),
+                from: "a@example.com".into(),
+                subject: "Hello meta".into(),
+                date: "2026-08-03".into(),
+            }],
+        };
+        let mail: Arc<dyn MailHost> = Arc::new(GrantGatedMailHost::new(
+            mock,
+            grants,
+            "com.example.mail-reader",
+            "u1",
+        ));
+
+        let rt = runtime_with(ResourceLimits {
+            wall_clock: Duration::from_secs(5),
+            ..ResourceLimits::default()
+        });
+        let h = rt
+            .load_wat("com.example.mail-reader", MAIL_READER_WAT)
+            .unwrap();
+        let err = rt.read_meta_via_plugin(&h, mail).unwrap_err();
+        assert!(
+            err.to_string().contains("denied"),
+            "expected denied, got {err}"
         );
     }
 }

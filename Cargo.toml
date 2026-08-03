@@ -7,6 +7,7 @@ members = [
   "plugin-package",
   "plugin-dev-cli",
   "plugin-runtime",
+  "plugin-mail",
 ]
 
 [workspace.package]

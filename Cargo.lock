@@ -3197,6 +3197,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "plugin-mail"
+version = "0.1.0"
+dependencies = [
+ "plugin-permissions",
+ "serde",
+ "serde_json",
+ "tempfile",
+ "thiserror 2.0.19",
+]
+
+[[package]]
 name = "plugin-manifest"
 version = "0.1.0"
 dependencies = [
@@ -3242,7 +3253,10 @@ dependencies = [
 name = "plugin-runtime"
 version = "0.1.0"
 dependencies = [
+ "plugin-mail",
+ "plugin-permissions",
  "serde",
+ "serde_json",
  "tempfile",
  "thiserror 2.0.19",
  "wasmtime",
