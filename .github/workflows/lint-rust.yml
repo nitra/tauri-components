@@ -53,4 +53,4 @@ jobs:
       - name: Test plugin crates
         run: >-
           cargo test -p plugin-manifest -p plugin-permissions -p plugin-package
-          -p plugin-runtime --all-targets
+          -p plugin-runtime -p plugin-mail --all-targets

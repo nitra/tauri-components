@@ -1,19 +1,17 @@
 [package]
-name = "plugin-runtime"
+name = "plugin-mail"
 version = "0.1.0"
-description = "Wasmtime plugin runtime: shared Engine, per-invocation Store, fuel/epoch/memory limits, circuit breaker."
+description = "nitra:mail domain types, MailHost trait, and grant-gated metadata read for plugins."
 edition.workspace = true
 license.workspace = true
 authors.workspace = true
 repository.workspace = true
 
 [dependencies]
-plugin-mail = { path = "../plugin-mail" }
+plugin-permissions = { path = "../plugin-permissions" }
 serde = { workspace = true }
 serde_json = { workspace = true }
 thiserror = { workspace = true }
-wasmtime = { workspace = true }
 
 [dev-dependencies]
-plugin-permissions = { path = "../plugin-permissions" }
 tempfile = { workspace = true }
