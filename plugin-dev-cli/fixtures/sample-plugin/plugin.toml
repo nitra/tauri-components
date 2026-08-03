@@ -1,0 +1,29 @@
+id = "com.example.mail-draft-helper"
+name = "Draft Helper"
+version = "0.1.0"
+publisher = "example"
+publisher_key_id = "ext_example_2026"
+
+[a2ui]
+protocol = "1.0"
+schema_rev = "testhash-replace-with-pin"
+
+[requires]
+platform = "^0.1"
+"nitra:mail" = "^0.1"
+
+[[capabilities]]
+name = "mail:metadata.read"
+resource_kinds = ["message"]
+
+[[capabilities]]
+name = "mail:draft.create"
+resource_kinds = ["account"]
+
+[[surfaces]]
+id = "sidebar.draft-helper"
+kind = "sidebar"
+
+[[surfaces]]
+id = "detail.draft-helper"
+kind = "email-detail"

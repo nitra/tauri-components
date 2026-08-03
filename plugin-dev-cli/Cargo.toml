@@ -1,0 +1,23 @@
+[package]
+name = "plugin-dev-cli"
+version = "0.1.0"
+description = "CLI to validate, package, sign, and local-install .nitra-plugin archives."
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+
+[[bin]]
+name = "nitra-plugin"
+path = "src/main.rs"
+
+[dependencies]
+anyhow = { workspace = true }
+clap = { workspace = true }
+ed25519-dalek = { workspace = true }
+hex = { workspace = true }
+keyring = { workspace = true }
+plugin-manifest = { path = "../plugin-manifest" }
+plugin-package = { path = "../plugin-package" }
+plugin-permissions = { path = "../plugin-permissions" }
+semver = { workspace = true }

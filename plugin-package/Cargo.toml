@@ -1,0 +1,25 @@
+[package]
+name = "plugin-package"
+version = "0.1.0"
+description = ".nitra-plugin archive build, verify, sign, and local registry install."
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+
+[dependencies]
+anyhow = { workspace = true }
+ed25519-dalek = { workspace = true }
+hex = { workspace = true }
+plugin-manifest = { path = "../plugin-manifest" }
+plugin-permissions = { path = "../plugin-permissions" }
+rand = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+semver = { workspace = true }
+sha2 = { workspace = true }
+thiserror = { workspace = true }
+zip = { workspace = true }
+
+[dev-dependencies]
+tempfile = { workspace = true }

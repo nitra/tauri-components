@@ -8,6 +8,7 @@ on:
     paths:
       - '**/*.rs'
       - '**/Cargo.toml'
+      - 'Cargo.lock'
 
   pull_request:
     branches:
@@ -23,11 +24,6 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-    # Єдиний Rust-crate репо живе в tauri-plugin-agent/ (кореневого
-    # Cargo.toml немає) — без цього cargo fmt/clippy падають одразу.
-    defaults:
-      run:
-        working-directory: tauri-plugin-agent
     steps:
       - uses: actions/checkout@v6
         with:
@@ -37,8 +33,8 @@ jobs:
         with:
           components: rustfmt, clippy
 
-      # clippy компілює tauri, якому на Linux потрібні системні -dev пакети
-      # GTK/WebKitGTK — без них збірка падає одразу на pkg-config.
+      # clippy компілює tauri-plugin-agent, якому на Linux потрібні системні -dev
+      # пакети GTK/WebKitGTK — без них збірка падає одразу на pkg-config.
       - name: Install Tauri system dependencies
         run: |
           sudo apt-get update
@@ -46,10 +42,15 @@ jobs:
 
       - uses: Swatinem/rust-cache@v2
         with:
-          workspaces: tauri-plugin-agent
+          workspaces: .
 
       - name: Rustfmt
         run: cargo fmt --all -- --check
 
       - name: Clippy
         run: cargo clippy --all-targets --all-features -- -D warnings
+
+      - name: Test plugin crates
+        run: >-
+          cargo test -p plugin-manifest -p plugin-permissions -p plugin-package
+          --all-targets
