@@ -6,6 +6,7 @@ members = [
   "plugin-permissions",
   "plugin-package",
   "plugin-dev-cli",
+  "plugin-runtime",
 ]
 
 [workspace.package]
@@ -29,3 +30,4 @@ tempfile = "3"
 clap = { version = "4", features = ["derive"] }
 keyring = { version = "3", features = ["apple-native", "windows-native", "linux-native"] }
 semver = { version = "1", features = ["serde"] }
+wasmtime = { version = "37", default-features = false, features = ["runtime", "cranelift", "wat"] }
