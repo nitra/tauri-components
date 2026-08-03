@@ -1,0 +1,65 @@
+[
+  {
+    "version": "v1.0",
+    "createSurface": {
+      "surfaceId": "sidebar.draft-helper",
+      "catalogId": "nitra.core",
+      "components": [
+        {
+          "id": "root",
+          "component": "Column",
+          "children": ["title", "from", "subject", "actions"],
+          "justify": "start",
+          "align": "stretch"
+        },
+        {
+          "id": "title",
+          "component": "Text",
+          "text": "Draft Helper",
+          "variant": "body"
+        },
+        {
+          "id": "from",
+          "component": "Text",
+          "text": "From: a@example.com",
+          "variant": "caption"
+        },
+        {
+          "id": "subject",
+          "component": "Text",
+          "text": "Subject: Hello from Gmail",
+          "variant": "caption"
+        },
+        {
+          "id": "actions",
+          "component": "Row",
+          "children": ["draft_btn"],
+          "justify": "start",
+          "align": "center"
+        },
+        {
+          "id": "draft_label",
+          "component": "Text",
+          "text": "Create draft"
+        },
+        {
+          "id": "draft_btn",
+          "component": "Button",
+          "child": "draft_label",
+          "variant": "primary",
+          "action": {
+            "event": {
+              "name": "createDraft",
+              "context": {
+                "messageId": "msg_1"
+              }
+            }
+          }
+        }
+      ],
+      "dataModel": {
+        "messageId": "msg_1"
+      }
+    }
+  }
+]
