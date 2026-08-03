@@ -191,6 +191,21 @@ impl GrantStore {
         self.save()
     }
 
+    /// Grants currently stored for one plugin (any user).
+    pub fn list_for_plugin(&self, plugin_id: &str) -> Vec<Grant> {
+        self.data
+            .grants
+            .iter()
+            .filter(|g| g.plugin_id == plugin_id)
+            .cloned()
+            .collect()
+    }
+
+    /// All grants (Manager UX / debug).
+    pub fn list_all(&self) -> &[Grant] {
+        &self.data.grants
+    }
+
     fn save(&self) -> Result<(), PermissionsError> {
         if let Some(parent) = self.path.parent() {
             fs::create_dir_all(parent)?;

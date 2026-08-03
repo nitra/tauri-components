@@ -418,6 +418,60 @@ pub fn write_public_key_file(
     Ok(path)
 }
 
+/// List installed plugin versions under `registry_root/<id>/<version>/`.
+pub fn list_installed(registry_root: &Path) -> Result<Vec<InstalledPlugin>, PackageError> {
+    let mut out = Vec::new();
+    if !registry_root.exists() {
+        return Ok(out);
+    }
+    for id_entry in fs::read_dir(registry_root)? {
+        let id_entry = id_entry?;
+        if !id_entry.file_type()?.is_dir() {
+            continue;
+        }
+        for ver_entry in fs::read_dir(id_entry.path())? {
+            let ver_entry = ver_entry?;
+            if !ver_entry.file_type()?.is_dir() {
+                continue;
+            }
+            let toml_path = ver_entry.path().join("plugin.toml");
+            if !toml_path.exists() {
+                continue;
+            }
+            let manifest = PluginManifest::from_path(&toml_path)?;
+            let public_key_hex = fs::read_to_string(ver_entry.path().join("installed.json"))
+                .ok()
+                .and_then(|s| serde_json::from_str::<serde_json::Value>(&s).ok())
+                .and_then(|v| {
+                    v.get("public_key_hex")
+                        .and_then(|x| x.as_str())
+                        .map(str::to_string)
+                });
+            out.push(InstalledPlugin {
+                manifest,
+                install_dir: ver_entry.path(),
+                public_key_hex,
+            });
+        }
+    }
+    out.sort_by(|a, b| {
+        a.manifest
+            .id
+            .cmp(&b.manifest.id)
+            .then(a.manifest.version.cmp(&b.manifest.version))
+    });
+    Ok(out)
+}
+
+/// Remove all versions of a plugin from the registry (uninstall).
+pub fn uninstall_plugin(registry_root: &Path, plugin_id: &str) -> Result<(), PackageError> {
+    let dir = registry_root.join(plugin_id);
+    if dir.exists() {
+        fs::remove_dir_all(&dir)?;
+    }
+    Ok(())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -478,6 +532,12 @@ kind = "sidebar"
         assert_eq!(installed.manifest.id, "com.example.helper");
         assert!(installed.install_dir.join("component.wasm").exists());
         assert!(trust.is_trusted("ext_example_2026"));
+
+        let listed = list_installed(&registry).unwrap();
+        assert_eq!(listed.len(), 1);
+        assert_eq!(listed[0].manifest.id, "com.example.helper");
+        uninstall_plugin(&registry, "com.example.helper").unwrap();
+        assert!(list_installed(&registry).unwrap().is_empty());
     }
 
     #[test]

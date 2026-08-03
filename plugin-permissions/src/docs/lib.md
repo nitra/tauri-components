@@ -3,7 +3,7 @@ type: Module
 title: lib.rs
 resource: plugin-permissions/src/lib.rs
 docgen:
-  crc: ebfdb803
+  crc: 73cc573c
 ---
 
 ## Огляд
