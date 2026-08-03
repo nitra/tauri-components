@@ -1,0 +1,47 @@
+plugin-mail/src/lib.rs
+  s_0cd77fc8f2a93e::t_587f8c93ea56f4 1-182
+plugin-runtime/src/docs/mail_abi.md
+  s_0cd77fc8f2a93e::t_62241181d4da4d 1-11
+plugin-mail/Cargo.toml
+  s_0cd77fc8f2a93e::t_31a5a2420c7948 1-17
+plugin-runtime/Cargo.toml
+  s_0cd77fc8f2a93e::t_6314e75bff8cdf 11,18
+  s_0cd77fc8f2a93e::t_30ef1672d90566 13
+plugin-mail/src/docs/lib.md
+  s_0cd77fc8f2a93e::t_6f24c73f783bdd 1-16
+plugin-mail/wit/mail.wit
+  s_0cd77fc8f2a93e::t_9b396895a6a0cd 1-18
+Cargo.toml
+  s_0cd77fc8f2a93e::t_61dad8b00bd651 10
+.github/workflows/lint-rust.yml
+  s_0cd77fc8f2a93e::t_b1b7c76b989704 56
+plugin-runtime/src/lib.rs
+  s_0cd77fc8f2a93e::t_0cba7df8ac9128 22-29
+  s_0cd77fc8f2a93e::t_5ac6425f036c8d 176-179
+  s_0cd77fc8f2a93e::t_f4423e9e354495 21
+  s_0cd77fc8f2a93e::t_99e0f143ee4b14 275-310,317-337,360,383-384,394-395,406,428-431
+  s_0cd77fc8f2a93e::t_6eb1fe1a697ab5 403-405
+  s_0cd77fc8f2a93e::t_9b57d05b3554e9 682-764
+plugin-runtime/src/mail_abi.rs
+  s_0cd77fc8f2a93e::t_9406b2ad79ce0c 1-9,11-89,91,93-115
+  s_0cd77fc8f2a93e::t_9ab7244f7fd0a3 10
+  s_0cd77fc8f2a93e::t_4914e7ad688c42 90,92
+Cargo.lock
+  s_0cd77fc8f2a93e::t_5730ce24cbdece 3199-3209,3256-3257,3259
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.20",
+  "base_commit_sha": "a276cd7feda29fd4f2f0cb795894abff36487ff6",
+  "prompts": {},
+  "sessions": {
+    "s_0cd77fc8f2a93e": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "a0dbec46-fabc-40f6-94c0-e6b496ef4308",
+        "model": "grok-4.5"
+      },
+      "human_author": "Vitalii Tverdokhlib <v@nitra.ai>"
+    }
+  }
+}
