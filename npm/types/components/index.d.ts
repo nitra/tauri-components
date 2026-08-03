@@ -1,1 +1,11 @@
-export { STATUS_COLOR, statusColor } from './status.js'
+export { default as AgentDialog } from './AgentDialog.vue';
+export { default as AuditDialog } from './AuditDialog.vue';
+export { default as BaseDialog } from './BaseDialog.vue';
+export { default as DialogActions } from './DialogActions.vue';
+export { default as RequestView } from './RequestView.vue';
+export { default as StatePill } from './StatePill.vue';
+export { default as A2uiSurface } from './A2uiSurface.vue';
+export { default as A2uiNode } from './A2uiNode.vue';
+export { STATUS_COLOR, statusColor } from './status.js';
+export { CATALOG_NITRA_CORE, NITRA_CORE_COMPONENTS, resolveDynamicString, indexComponents } from '../a2ui/catalog.js';
+export { validateA2uiStream, SAMPLE_SIDEBAR_STREAM } from '../a2ui/validate.js';

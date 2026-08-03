@@ -3182,6 +3182,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "plugin-a2ui"
+version = "0.1.0"
+dependencies = [
+ "hex",
+ "serde",
+ "serde_json",
+ "sha2",
+ "tempfile",
+ "thiserror 2.0.19",
+]
+
+[[package]]
 name = "plugin-dev-cli"
 version = "0.1.0"
 dependencies = [
