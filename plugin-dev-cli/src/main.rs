@@ -1,4 +1,4 @@
-//! `nitra-plugin` — developer CLI for `.nitra-plugin` packages (M1).
+//! `nitra-plugin` — developer CLI for `.n-plugin` packages (M1).
 //!
 //! Private signing keys live in the OS keychain (`keyring`). Trusted public keys
 //! for install TOFU live under `--app-data/plugins/trust-store.json`.
@@ -19,10 +19,7 @@ use plugin_permissions::{trust_store_path, TrustStore};
 const SERVICE: &str = "nitra-plugin-dev";
 
 #[derive(Parser, Debug)]
-#[command(
-    name = "nitra-plugin",
-    about = "Build and install .nitra-plugin packages"
-)]
+#[command(name = "nitra-plugin", about = "Build and install .n-plugin packages")]
 struct Cli {
     #[command(subcommand)]
     command: Commands,
@@ -44,12 +41,12 @@ enum Commands {
         #[arg(long)]
         manifest: PathBuf,
     },
-    /// Pack a staging directory into a signed `.nitra-plugin`.
+    /// Pack a staging directory into a signed `.n-plugin`.
     Package {
         /// Directory containing plugin.toml, component.wasm, settings.schema.json, changelog.md.
         #[arg(long)]
         dir: PathBuf,
-        /// Output `.nitra-plugin` path.
+        /// Output `.n-plugin` path.
         #[arg(long)]
         out: PathBuf,
         /// Keychain entry / publisher_key_id used for signing.
@@ -174,7 +171,7 @@ fn main() -> Result<()> {
                         package
                             .file_name()
                             .and_then(|s| s.to_str())
-                            .unwrap_or("plugin.nitra-plugin")
+                            .unwrap_or(plugin_package::DEFAULT_PACKAGE_FILENAME)
                     ));
                     if companion.exists() {
                         Some(read_hex_file(&companion)?)

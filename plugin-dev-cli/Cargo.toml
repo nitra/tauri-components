@@ -1,7 +1,7 @@
 [package]
 name = "plugin-dev-cli"
 version = "0.1.0"
-description = "CLI to validate, package, sign, and local-install .nitra-plugin archives."
+description = "CLI to validate, package, sign, and local-install .n-plugin archives."
 edition.workspace = true
 license.workspace = true
 authors.workspace = true

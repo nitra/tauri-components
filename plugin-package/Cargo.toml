@@ -1,7 +1,7 @@
 [package]
 name = "plugin-package"
 version = "0.1.0"
-description = ".nitra-plugin archive build, verify, sign, and local registry install."
+description = ".n-plugin archive build, verify, sign, and local registry install."
 edition.workspace = true
 license.workspace = true
 authors.workspace = true

@@ -1,4 +1,4 @@
-//! Parse and validate `plugin.toml` for `.nitra-plugin` packages.
+//! Parse and validate `plugin.toml` for `.n-plugin` packages.
 //!
 //! Host install rejects manifests that fail structural or SemVer range checks
 //! before archive contents are copied into the local registry.
