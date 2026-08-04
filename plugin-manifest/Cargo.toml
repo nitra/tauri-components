@@ -1,7 +1,7 @@
 [package]
 name = "plugin-manifest"
 version = "0.1.0"
-description = "Parse and validate nitra plugin.toml manifests for .nitra-plugin packages."
+description = "Parse and validate nitra plugin.toml manifests for .n-plugin packages."
 edition.workspace = true
 license.workspace = true
 authors.workspace = true

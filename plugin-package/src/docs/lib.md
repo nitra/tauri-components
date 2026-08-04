@@ -8,7 +8,7 @@ docgen:
 
 ## Огляд
 
-Збирає zip `.nitra-plugin`, рахує checksums, підписує Ed25519, верифікує і встановлює в local registry з TOFU. Unsigned пакети дозволені лише з `allow_unsigned` (debug).
+Збирає zip `.n-plugin`, рахує checksums, підписує Ed25519, верифікує і встановлює в local registry з TOFU. Unsigned пакети дозволені лише з `allow_unsigned` (debug).
 
 ## Публічний API
 

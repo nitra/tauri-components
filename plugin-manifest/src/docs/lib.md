@@ -8,7 +8,7 @@ docgen:
 
 ## Огляд
 
-Парсить і валідовує `plugin.toml` для пакетів `.nitra-plugin`: A2UI pin v1.0, SemVer ranges, capabilities і surfaces. Host відхиляє install при несумісності або MVP-заборонених scopes.
+Парсить і валідовує `plugin.toml` для пакетів `.n-plugin`: A2UI pin v1.0, SemVer ranges, capabilities і surfaces. Host відхиляє install при несумісності або MVP-заборонених scopes.
 
 ## Публічний API
 

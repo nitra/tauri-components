@@ -1,4 +1,4 @@
-//! Build, verify, and install `.nitra-plugin` archives.
+//! Build, verify, and install `.n-plugin` archives.
 //!
 //! Package layout: `plugin.toml`, `component.wasm`, `settings.schema.json`,
 //! `changelog.md`, `checksums.sha256`, `signature.ed25519`.
@@ -16,7 +16,13 @@ use sha2::{Digest, Sha256};
 use zip::write::SimpleFileOptions;
 use zip::{ZipArchive, ZipWriter};
 
-/// Required members inside a `.nitra-plugin` archive (excluding signature artifacts).
+/// File extension for plugin archives (without leading dot).
+pub const PACKAGE_EXTENSION: &str = "n-plugin";
+
+/// Default filename when a path has no file name.
+pub const DEFAULT_PACKAGE_FILENAME: &str = "plugin.n-plugin";
+
+/// Required members inside a `.n-plugin` archive (excluding signature artifacts).
 pub const REQUIRED_PAYLOAD_FILES: &[&str] = &[
     "plugin.toml",
     "component.wasm",
@@ -139,7 +145,7 @@ pub fn verify_checksums(
         .map_err(|_| PackageError::Crypto("signature verification failed".into()))
 }
 
-/// Create a `.nitra-plugin` zip from a staging directory that already contains payload files.
+/// Create a `.n-plugin` zip from a staging directory that already contains payload files.
 pub fn pack_directory(
     staging_dir: &Path,
     output_path: &Path,
@@ -412,7 +418,7 @@ pub fn write_public_key_file(
         package_path
             .file_name()
             .and_then(|s| s.to_str())
-            .unwrap_or("plugin.nitra-plugin")
+            .unwrap_or(DEFAULT_PACKAGE_FILENAME)
     ));
     fs::write(&path, public_key_hex.as_bytes())?;
     Ok(path)
@@ -515,7 +521,7 @@ kind = "sidebar"
         write_staging(&staging);
 
         let (sk, pub_hex) = generate_keypair();
-        let pkg = dir.path().join("helper.nitra-plugin");
+        let pkg = dir.path().join("helper.n-plugin");
         pack_directory(&staging, &pkg, Some(&sk)).unwrap();
 
         let app_data = dir.path().join("app");
@@ -547,12 +553,12 @@ kind = "sidebar"
         fs::create_dir_all(&staging).unwrap();
         write_staging(&staging);
         let (sk, pub_hex) = generate_keypair();
-        let pkg = dir.path().join("helper.nitra-plugin");
+        let pkg = dir.path().join("helper.n-plugin");
         pack_directory(&staging, &pkg, Some(&sk)).unwrap();
 
         // rebuild zip with bad wasm but old checksums by manual corruption is hard;
         // instead verify unsigned rejection
-        let pkg2 = dir.path().join("unsigned.nitra-plugin");
+        let pkg2 = dir.path().join("unsigned.n-plugin");
         pack_directory(&staging, &pkg2, None).unwrap();
         let err = verify_package(&pkg2, Some(&pub_hex), false).unwrap_err();
         assert!(err.to_string().contains("unsigned"));
@@ -565,7 +571,7 @@ kind = "sidebar"
         fs::create_dir_all(&staging).unwrap();
         write_staging(&staging);
         let (sk, pub_hex) = generate_keypair();
-        let pkg = dir.path().join("helper.nitra-plugin");
+        let pkg = dir.path().join("helper.n-plugin");
         pack_directory(&staging, &pkg, Some(&sk)).unwrap();
 
         let app_data = dir.path().join("app");
