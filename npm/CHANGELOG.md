@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.17.0] - 2026-08-05
+
+### Added
+
+- A2UI v1.0 Vue renderer (nitra.core): A2uiSurface + catalog validation helpers
+
 ## [0.16.2] - 2026-07-24
 
 ### Fixed
