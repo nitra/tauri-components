@@ -1,0 +1,19 @@
+npm/src/a2ui/index.js
+  s_2d4dd99cab3e9c::t_93c1d7163a0332 9
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "97eddc1227987a0428766f56836d6d645e346d47",
+  "prompts": {},
+  "sessions": {
+    "s_2d4dd99cab3e9c": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "8aef7dcb-1cdc-4808-ab6c-dd14ead4ee44",
+        "model": "grok-4.5"
+      },
+      "human_author": "Vitalii Tverdokhlib <v@nitra.ai>"
+    }
+  }
+}

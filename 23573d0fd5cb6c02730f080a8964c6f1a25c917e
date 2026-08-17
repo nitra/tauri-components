@@ -1,0 +1,53 @@
+plugin-runtime/wit/plugin.wit
+  s_2d4dd99cab3e9c::t_07230cb43d41f2 3,9-10
+plugin-mail/wit/mail.wit
+  s_2d4dd99cab3e9c::t_85bd8bdd55a66d 11-22,28-32,35
+plugin-runtime/src/lib.rs
+  s_2d4dd99cab3e9c::t_3882ba212052b3 748,786,808-814,816-878,883
+  s_2d4dd99cab3e9c::t_1a686a4c9fb897 184
+  s_2d4dd99cab3e9c::t_01f844a54c05cc 815
+  s_2d4dd99cab3e9c::t_6a483167b1dea4 419
+  s_2d4dd99cab3e9c::t_4157dd69469905 187-188
+  s_2d4dd99cab3e9c::t_eb13db09f78030 299-300,313-341,362,366,431,465-467
+  s_2d4dd99cab3e9c::t_64b713c24b5e95 25-28
+  s_2d4dd99cab3e9c::t_e743f703dc0a44 372
+  s_2d4dd99cab3e9c::t_52d49102a648ac 30-31
+  s_2d4dd99cab3e9c::t_cc195afe94bff2 879-882
+plugin-runtime/src/mail_abi.rs
+  s_2d4dd99cab3e9c::t_1a83b98f6d98ec 14-15
+  s_2d4dd99cab3e9c::t_b64edf9e85dfbb 1,3,8-11,13,16,23,65-102,125-148,157-161,171-172,188-208,210-216,221
+  s_2d4dd99cab3e9c::t_e9b88f154ce725 209,217-220
+plugin-mail/src/lib.rs
+  s_2d4dd99cab3e9c::t_b413878eb2beab 1,4-5,15-17,49-63,67-69,81-89,131-139,146,157-163,171-180,196-204,213,218-219,240,250-276,278
+  s_2d4dd99cab3e9c::t_0b6598fcfca3b3 277
+  s_2d4dd99cab3e9c::t_9d37a918f0a7eb 279
+plugin-permissions/src/lib.rs
+  s_2d4dd99cab3e9c::t_3ab02451784ea5 345-364,366-381
+  s_2d4dd99cab3e9c::t_79dbe70b8681e9 365
+  s_2d4dd99cab3e9c::t_414c301bb1800d 218-302,382
+  s_2d4dd99cab3e9c::t_5a516df0b114fb 303-304,383
+plugin-mail/src/docs/lib.md
+  s_2d4dd99cab3e9c::t_db5a9896e39d02 2,6,11
+plugin-permissions/src/docs/lib.md
+  s_2d4dd99cab3e9c::t_70485d9e584867 2,6,11
+plugin-runtime/src/docs/lib.md
+  s_2d4dd99cab3e9c::t_71b72541bc94cb 2,6,11
+plugin-runtime/src/docs/mail_abi.md
+  s_2d4dd99cab3e9c::t_6e5d46e980976d 2,6,11
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.20",
+  "base_commit_sha": "23573d0fd5cb6c02730f080a8964c6f1a25c917e",
+  "prompts": {},
+  "sessions": {
+    "s_2d4dd99cab3e9c": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "8aef7dcb-1cdc-4808-ab6c-dd14ead4ee44",
+        "model": "grok-4.5"
+      },
+      "human_author": "Vitalii Tverdokhlib <v@nitra.ai>"
+    }
+  }
+}

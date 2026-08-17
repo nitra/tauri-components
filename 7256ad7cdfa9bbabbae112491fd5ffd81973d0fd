@@ -1,0 +1,21 @@
+plugin-runtime/src/mail_abi.rs
+  s_0cd77fc8f2a93e::t_4f32ab6479891b 45
+plugin-runtime/src/lib.rs
+  s_0cd77fc8f2a93e::t_4f32ab6479891b 27-28,723-725,760-762
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.20",
+  "base_commit_sha": "7256ad7cdfa9bbabbae112491fd5ffd81973d0fd",
+  "prompts": {},
+  "sessions": {
+    "s_0cd77fc8f2a93e": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "a0dbec46-fabc-40f6-94c0-e6b496ef4308",
+        "model": "grok-4.5"
+      },
+      "human_author": "Vitalii Tverdokhlib <v@nitra.ai>"
+    }
+  }
+}

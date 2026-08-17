@@ -1,0 +1,24 @@
+plugin-package/src/lib.rs
+  s_2d4dd99cab3e9c::t_becf3fadf2c54f 421-474
+  s_2d4dd99cab3e9c::t_10317c247dd350 535-540
+plugin-permissions/src/lib.rs
+  s_2d4dd99cab3e9c::t_b11299402c45e1 194-208
+plugin-permissions/src/docs/lib.md
+  s_2d4dd99cab3e9c::t_a8d1dd45242ec6 6
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.20",
+  "base_commit_sha": "2c578ffd350166ee9f525fd9abbbd60f967da33a",
+  "prompts": {},
+  "sessions": {
+    "s_2d4dd99cab3e9c": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "8aef7dcb-1cdc-4808-ab6c-dd14ead4ee44",
+        "model": "grok-4.5"
+      },
+      "human_author": "Vitalii Tverdokhlib <v@nitra.ai>"
+    }
+  }
+}

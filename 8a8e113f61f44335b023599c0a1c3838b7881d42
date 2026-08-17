@@ -1,0 +1,37 @@
+plugin-dev-cli/src/main.rs
+  s_2d4dd99cab3e9c::t_4f66470cdf6433 174
+  s_2d4dd99cab3e9c::t_b7af205446f7b4 1,22,44,49
+plugin-package/src/lib.rs
+  s_2d4dd99cab3e9c::t_dbbfd215b0c542 421
+  s_2d4dd99cab3e9c::t_2520b415fe1a65 19-24
+  s_2d4dd99cab3e9c::t_61904af798e740 25
+  s_2d4dd99cab3e9c::t_9e862ce15d7c0c 1,148,524,556,561,574
+plugin-dev-cli/Cargo.toml
+  s_2d4dd99cab3e9c::t_3f7841690cb417 4
+plugin-manifest/Cargo.toml
+  s_2d4dd99cab3e9c::t_0736a1b6cbb77a 4
+plugin-manifest/src/lib.rs
+  s_2d4dd99cab3e9c::t_2bdddc4dedf1d0 1
+plugin-package/Cargo.toml
+  s_2d4dd99cab3e9c::t_ea3a106741509b 4
+plugin-manifest/src/docs/lib.md
+  s_2d4dd99cab3e9c::t_fe497c57313bb1 11
+plugin-package/src/docs/lib.md
+  s_2d4dd99cab3e9c::t_a287160ce01acc 11
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.20",
+  "base_commit_sha": "8a8e113f61f44335b023599c0a1c3838b7881d42",
+  "prompts": {},
+  "sessions": {
+    "s_2d4dd99cab3e9c": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "8aef7dcb-1cdc-4808-ab6c-dd14ead4ee44",
+        "model": "grok-4.5"
+      },
+      "human_author": "Vitalii Tverdokhlib <v@nitra.ai>"
+    }
+  }
+}

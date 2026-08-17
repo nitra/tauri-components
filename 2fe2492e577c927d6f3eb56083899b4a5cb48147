@@ -1,0 +1,76 @@
+plugin-dev-cli/fixtures/sample-plugin/plugin.toml
+  s_0cd77fc8f2a93e::t_01f0343487348a 1-29
+plugin-permissions/src/lib.rs
+  s_0cd77fc8f2a93e::t_b37ea69010ff5f 165-168,228
+  s_0cd77fc8f2a93e::t_09e8fbca02fa14 1-164,169-227,229-258
+.marksman.toml
+  s_0cd77fc8f2a93e::t_0fa84732ab68d8 1-27
+plugin-package/Cargo.toml
+  s_0cd77fc8f2a93e::t_5b87c882a81722 19
+  s_0cd77fc8f2a93e::t_c6200074cdeef6 1-18,20-25
+plugin-manifest/src/docs/lib.md
+  s_0cd77fc8f2a93e::t_d199ddb5c1ed55 1-17
+.github/workflows/lint-rust.yml
+  s_0cd77fc8f2a93e::t_58a3933e9c4a97 11,36-37,45,52-56
+plugin-manifest/src/lib.rs
+  s_0cd77fc8f2a93e::t_afef8c187b6bf7 1-103,106-121,124-125,128-136,138-162,165-204,206-285
+  s_0cd77fc8f2a93e::t_b37ea69010ff5f 104-105,122-123,126-127,137,163-164,205
+plugin-dev-cli/src/main.rs
+  s_0cd77fc8f2a93e::t_1be6b5904e15f3 155-159
+  s_0cd77fc8f2a93e::t_2415fe472c692b 17
+  s_0cd77fc8f2a93e::t_d5cbc20aa1270d 1-8,10-16,18-21,26-100,104-154,160-195,198-207
+  s_0cd77fc8f2a93e::t_08502f113d8acd 9
+  s_0cd77fc8f2a93e::t_b37ea69010ff5f 22-25,101-103,196-197
+plugin-package/src/docs/lib.md
+  s_0cd77fc8f2a93e::t_35c7acb22c81fa 1-18
+package.json
+  s_0cd77fc8f2a93e::t_ca6ba7d968c4c6 13
+  s_0cd77fc8f2a93e::t_fe2ccb3443f55e 16
+Cargo.toml
+  s_0cd77fc8f2a93e::t_af5eec07bc2072 31
+  s_0cd77fc8f2a93e::t_2a5c9a5aed228d 1-30
+plugin-dev-cli/fixtures/sample-plugin/changelog.md
+  s_0cd77fc8f2a93e::t_ec5cdca176c596 1-7
+plugin-dev-cli/Cargo.toml
+  s_0cd77fc8f2a93e::t_87108cb08b569d 1-23
+plugin-permissions/src/docs/lib.md
+  s_0cd77fc8f2a93e::t_447060ac59da4e 1-17
+.vscode/extensions.json
+  s_0cd77fc8f2a93e::t_0fa84732ab68d8 10-11
+plugin-manifest/Cargo.toml
+  s_0cd77fc8f2a93e::t_0f24f32dcd0288 1-18
+plugin-dev-cli/fixtures/sample-plugin/settings.schema.json
+  s_0cd77fc8f2a93e::t_281f60e74b8605 1
+.gitignore
+  s_0cd77fc8f2a93e::t_6a86387d1225ae 4
+plugin-package/src/lib.rs
+  s_0cd77fc8f2a93e::t_299f8d9fdc066b 274-276
+  s_0cd77fc8f2a93e::t_b37ea69010ff5f 14,157-160,260-262,406-409
+  s_0cd77fc8f2a93e::t_8f1f3b76f072a2 224,226-231,237,273,279,281-299
+  s_0cd77fc8f2a93e::t_172f6c29d7dd51 225
+  s_0cd77fc8f2a93e::t_d87a505323ff9c 334-338
+  s_0cd77fc8f2a93e::t_07774216722a71 376
+  s_0cd77fc8f2a93e::t_9160f7e99cc474 1-13,15-156,161-223,232-236,238-259,263-272,277-278,280,300-333,339-375,377-405,410-527
+plugin-permissions/Cargo.toml
+  s_0cd77fc8f2a93e::t_bc223c71d3b959 1-17
+plugin-dev-cli/src/docs/main.md
+  s_0cd77fc8f2a93e::t_7055c0d72ed455 1-17
+Cargo.lock
+  s_0cd77fc8f2a93e::t_c50d6ce2cdc389 1-5987
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.20",
+  "base_commit_sha": "2fe2492e577c927d6f3eb56083899b4a5cb48147",
+  "prompts": {},
+  "sessions": {
+    "s_0cd77fc8f2a93e": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "a0dbec46-fabc-40f6-94c0-e6b496ef4308",
+        "model": "grok-4.5"
+      },
+      "human_author": "Vitalii Tverdokhlib <v@nitra.ai>"
+    }
+  }
+}

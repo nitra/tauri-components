@@ -1,0 +1,83 @@
+plugin-a2ui/fixtures/sidebar_sample.json
+  s_6eee9ac1945ff0::t_5318302e38f95e 1-65
+npm/src/components/A2uiSurface.stories.js
+  s_6eee9ac1945ff0::t_2e1e6d91a475f7 1-28
+plugin-a2ui/schemas/1.0/basic_catalog.json
+  s_6eee9ac1945ff0::t_93b3e25d3e202e 1-1477
+npm/src/a2ui/validate.js
+  s_6eee9ac1945ff0::t_c748b3fe932003 1-160
+npm/src/components/docs/A2uiSurface.md
+  s_6eee9ac1945ff0::t_4e64838b820ce2 1-11
+plugin-a2ui/schemas/1.0/common_types.json
+  s_6eee9ac1945ff0::t_93b3e25d3e202e 1-316
+npm/src/components/docs/A2uiNode.md
+  s_6eee9ac1945ff0::t_4e64838b820ce2 1-11
+plugin-a2ui/Cargo.toml
+  s_6eee9ac1945ff0::t_0659a92e90d452 1-18
+npm/src/components/A2uiNode.vue
+  s_6eee9ac1945ff0::t_4e64838b820ce2 13
+  s_6eee9ac1945ff0::t_2f03e6c5f83964 28-29
+  s_6eee9ac1945ff0::t_38ae7468ebd021 1-12,14-27,30-201
+npm/src/a2ui/docs/validate.md
+  s_6eee9ac1945ff0::t_d079ba7d3cab11 1,3-5,7-10
+  s_6eee9ac1945ff0::t_5ceea5cd240642 2,6
+  s_6eee9ac1945ff0::t_4e64838b820ce2 11
+npm/types/a2ui/validate.d.ts
+  s_6eee9ac1945ff0::t_0fca3bc27e23fd 1-4
+npm/.changes/260803-2136.md
+  s_6eee9ac1945ff0::t_07149893c78681 1-5
+plugin-a2ui/src/lib.rs
+  s_6eee9ac1945ff0::t_c294c2a3868b0b 175-178,192-194
+  s_6eee9ac1945ff0::t_22e40e5cddb16a 1-174,179-191,195-276,281-528
+  s_6eee9ac1945ff0::t_a9d452fd78dca4 277-280
+plugin-a2ui/src/docs/lib.md
+  s_6eee9ac1945ff0::t_103d50d86e7f06 1,3-5,7-10,12-14
+  s_6eee9ac1945ff0::t_c6e9b8b8c1c015 6,11,15
+  s_6eee9ac1945ff0::t_5ceea5cd240642 2
+npm/src/components/A2uiSurface.vue
+  s_6eee9ac1945ff0::t_d6369a31fdf533 1-6,8-17,19-64,74-96
+  s_6eee9ac1945ff0::t_e3f2fcf63bc0e9 18,65-73
+  s_6eee9ac1945ff0::t_4e64838b820ce2 7
+npm/src/components/index.js
+  s_6eee9ac1945ff0::t_4e64838b820ce2 15
+  s_6eee9ac1945ff0::t_756b81263cd668 12-13,16
+plugin-dev-cli/fixtures/sample-plugin/plugin.toml
+  s_6eee9ac1945ff0::t_db3449c750efb8 9
+Cargo.lock
+  s_6eee9ac1945ff0::t_2c074eb53b79ad 3184-3195
+npm/types/a2ui/catalog.d.ts
+  s_6eee9ac1945ff0::t_c294c2a3868b0b 1,3
+  s_6eee9ac1945ff0::t_0fca3bc27e23fd 2,4-6
+npm/src/a2ui/validate.test.js
+  s_6eee9ac1945ff0::t_9b019f37c3ff6f 1-55
+npm/src/a2ui/catalog.js
+  s_6eee9ac1945ff0::t_f5dc1dcf5530df 1-46
+npm/types/components/index.d.ts
+  s_6eee9ac1945ff0::t_0ed3786f00e36d 1-11
+plugin-a2ui/schemas/1.0/SCHEMA_REV
+  s_6eee9ac1945ff0::t_93b3e25d3e202e 1
+plugin-a2ui/schemas/1.0/agent_to_renderer.json
+  s_6eee9ac1945ff0::t_93b3e25d3e202e 1-202
+Cargo.toml
+  s_6eee9ac1945ff0::t_081769bc087166 11
+npm/src/a2ui/docs/catalog.md
+  s_6eee9ac1945ff0::t_6eaf02c44156a4 1,3-5,7-10
+  s_6eee9ac1945ff0::t_4e64838b820ce2 11
+  s_6eee9ac1945ff0::t_5ceea5cd240642 2,6
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.20",
+  "base_commit_sha": "c0fa58b4c3aa7ddc8707de05a82797b4fc30eef3",
+  "prompts": {},
+  "sessions": {
+    "s_6eee9ac1945ff0": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "0c871f16-f6a8-4e61-a25b-2ec743d0596e",
+        "model": "grok-4.5"
+      },
+      "human_author": "Vitalii Tverdokhlib <v@nitra.ai>"
+    }
+  }
+}

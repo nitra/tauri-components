@@ -1,0 +1,23 @@
+npm/src/a2ui/index.js
+  s_2d4dd99cab3e9c::t_60e620e0ec4faa 1-8
+npm/package.json
+  s_2d4dd99cab3e9c::t_89aa597402bb78 5,32-35
+npm/types/a2ui/index.d.ts
+  s_2d4dd99cab3e9c::t_56da83216d13fc 1-7
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "051599b9d7e6d6f3575d5c43304312d535af217c",
+  "prompts": {},
+  "sessions": {
+    "s_2d4dd99cab3e9c": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "8aef7dcb-1cdc-4808-ab6c-dd14ead4ee44",
+        "model": "grok-4.5"
+      },
+      "human_author": "Vitalii Tverdokhlib <v@nitra.ai>"
+    }
+  }
+}
