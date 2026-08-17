@@ -18,7 +18,12 @@ use tauri::{
     Manager, Runtime,
 };
 
-mod acp;
+/// Native ACP session API for product adapters that need a host-owned runner.
+///
+/// Products obtain `State<AcpState>` from their `AppHandle` and invoke these
+/// functions with host-selected `SpawnAgentArgs`; Components never receive the
+/// state, child-process handle, or credentials.
+pub mod acp;
 mod commands;
 mod journal;
 mod mcp_bridge;
