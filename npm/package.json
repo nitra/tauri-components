@@ -1,6 +1,6 @@
 {
   "name": "@7n/tauri-components",
-  "version": "0.18.0",
+  "version": "0.18.1",
   "type": "module",
   "description": "Shared LLM agent engine + Vue/Quasar UI for Tauri apps (chat, journal, A2UI, trust-tier approval).",
   "license": "MIT",

@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.18.1] - 2026-10-03
+
+### Changed
+
+- release: @7n/tauri-components@0.18.0
+
+### Fixed
+
+- `bin.tauri-app-release` у `package.json` без префікса `./` — інакше `npm publish` вважає шлях невалідним і прибирає bin з опублікованого пакета.
+
 ## [0.18.0] - 2026-10-03
 
 ### Added
