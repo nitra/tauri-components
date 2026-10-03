@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.18.0] - 2026-10-03
+
+### Added
+
+- Набір для релізу Tauri-застосунку з автооновленням: `useChangelogUpdater({ changelogUrl })` і `UpdateDialog` (діалог оновлення показує зміни з CHANGELOG між поточною й новою версією), `isDevBuild`/`displayVersion`, експорт `@7n/tauri-components/changelog` (розбір Keep a Changelog) і CLI `tauri-app-release` (`dmg` — підписаний нотаризований DMG + архів оновлення, `publish` — `latest.json` і `changelog.json` у artifact, `changelog` — зріз CHANGELOG для CI).
+
 ## [0.17.0] - 2026-08-05
 
 ### Added
