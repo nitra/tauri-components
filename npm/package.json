@@ -13,6 +13,9 @@
     "access": "public"
   },
   "types": "./types/index.d.ts",
+  "bin": {
+    "tauri-app-release": "./bin/tauri-app-release.mjs"
+  },
   "exports": {
     ".": {
       "types": "./types/index.d.ts",
@@ -33,10 +36,16 @@
     "./a2ui": {
       "types": "./types/a2ui/index.d.ts",
       "default": "./src/a2ui/index.js"
+    },
+    "./changelog": {
+      "types": "./types/app/changelog.d.ts",
+      "default": "./src/app/changelog.js"
     }
   },
   "files": [
     "src",
+    "bin",
+    "scripts",
     "types",
     "CHANGELOG.md",
     "!**/*.test.*",

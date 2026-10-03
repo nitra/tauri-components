@@ -4,11 +4,11 @@
  * @param {object} [options] mount options (forwarded)
  * @returns {object} test wrapper
  */
-export function mountQuasar(component: object, options?: object): object
+export function mountQuasar(component: object, options?: object): object;
 /**
  * Mount a page-level component wrapped in QLayout > QPageContainer.
  * @param {object} component Vue component
  * @param {object} [options] mount options (forwarded)
  * @returns {object} test wrapper
  */
-export function mountWithQuasar(component: object, options?: object): object
+export function mountWithQuasar(component: object, options?: object): object;
