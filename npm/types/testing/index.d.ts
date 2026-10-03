@@ -1,1 +1,1 @@
-export { mountQuasar, mountWithQuasar } from './quasar.js'
+export { mountQuasar, mountWithQuasar } from "./quasar.js";

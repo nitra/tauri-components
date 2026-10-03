@@ -1,4 +1,4 @@
 /**
  * @returns {void}
  */
-export function useUpdater(): void
+export function useUpdater(): void;
