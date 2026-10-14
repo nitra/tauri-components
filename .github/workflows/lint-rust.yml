@@ -31,6 +31,7 @@ jobs:
 
       - uses: dtolnay/rust-toolchain@stable
         with:
+          toolchain: '1.99.0'
           components: rustfmt, clippy
 
       # clippy компілює tauri-plugin-agent, якому на Linux потрібні системні -dev
